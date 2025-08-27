@@ -1,0 +1,837 @@
+[
+  {
+    "id": 1,
+    "name": "Scout",
+    "faction": "Neutral",
+    "type": "ship",
+    "cost": 0,
+    "on_play": [
+      { "type": "trade", "amount": 1 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [],
+    "scrap": []
+  },
+  {
+    "id": 2,
+    "name": "Viper",
+    "faction": "Neutral",
+    "type": "ship",
+    "cost": 0,
+    "on_play": [
+      { "type": "combat", "amount": 1 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [],
+    "scrap": []
+  },
+  {
+    "id": 3,
+    "name": "Explorer",
+    "faction": "Neutral",
+    "type": "ship",
+    "cost": 2,
+    "on_play": [
+      { "type": "trade", "amount": 2 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [],
+    "scrap": [
+      { "type": "combat", "amount": 2 }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Imperial Fighter",
+    "faction": "Star Empire",
+    "type": "ship",
+    "cost": 1,
+    "on_play": [
+      { "type": "combat", "amount": 2 }, { "type": "opponent_discards", "amount": 1 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [
+    { "type": "combat", "amount": 2 }
+    ],
+    "scrap": []
+  },
+  {
+    "id": 5,
+    "name": "Imperial Frigate",
+    "faction": "Star Empire",
+    "type": "ship",
+    "cost": 3,
+    "on_play": [
+      { "type": "combat", "amount": 4 },
+      { "type": "opponent_discards", "amount": 1 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [
+      { "type": "draw", "amount": 1 }
+    ],
+    "scrap": []
+  },
+  {
+    "id": 6,
+    "name": "Survey Ship",
+    "faction": "Star Empire",
+    "type": "ship",
+    "cost": 3,
+    "on_play": [
+      { "type": "trade", "amount": 1 },
+      { "type": "draw", "amount": 1 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [],
+    "scrap": [{ "type": "opponent_discards", "amount": 1 }]
+  },
+  {
+    "id": 7,
+    "name": "Corvette",
+    "faction": "Star Empire",
+    "type": "ship",
+    "cost": 2,
+    "on_play": [
+      { "type": "combat", "amount": 1 },
+      { "type": "draw", "amount": 1 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [{ "type": "combat", "amount": 2 }],
+    "scrap": []
+  },
+  {
+    "id": 8,
+    "name": "Battlecruiser",
+    "faction": "Star Empire",
+    "type": "ship",
+    "cost": 6,
+    "on_play": [
+      { "type": "combat", "amount": 5 },
+      { "type": "draw", "amount": 1 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [
+      { "type": "opponent_discards", "amount": 1 }
+    ],
+    "scrap": [
+      { "type": "draw", "amount": 1 }
+    ]
+  },
+  {
+    "id": 9,
+    "name": "Dreadnaught",
+    "faction": "Star Empire",
+    "type": "ship",
+    "cost": 7,
+    "on_play": [
+      { "type": "combat", "amount": 7 },
+      { "type": "draw", "amount": 1 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [],
+    "scrap": [
+      { "type": "combat", "amount": 5 }
+    ]
+  },
+  {
+    "id": 10,
+    "name": "Space Station",
+    "faction": "Star Empire",
+    "type": "base",
+    "cost": 4,
+    "defense": 4,
+    "outpost": true,
+    "on_play": [
+      { "type": "combat", "amount": 2 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [
+      { "type": "combat", "amount": 2 }
+    ],
+    "scrap": [
+      { "type": "trade", "amount": 4 }
+    ]
+  },
+{
+  "id": 11,
+  "name": "Recycling Station",
+  "faction": "Star Empire",
+  "type": "base",
+  "cost": 4,
+  "defense": 4,
+  "outpost": true,
+  "on_play": [],
+  "activated": [
+    { "type": "choose", "options": [
+      [ { "type": "discard_then_draw", "amount": 2 } ],
+      [ { "type": "trade", "amount": 1 } ]
+    ]}
+  ],
+  "passive": [],
+  "ally": [],
+  "scrap": []
+},
+  {
+    "id": 12,
+    "name": "War World",
+    "faction": "Star Empire",
+    "type": "base",
+    "cost": 5,
+    "defense": 4,
+    "outpost": true,
+    "on_play": [{ "type": "combat", "amount": 3 }],
+    "activated": [],
+    "passive": [],
+    "ally": [
+      { "type": "combat", "amount": 3 }
+    ],
+    "scrap": []
+  },
+  {
+    "id": 13,
+    "name": "Royal Redoubt",
+    "faction": "Star Empire",
+    "type": "base",
+    "cost": 6,
+    "defense": 6,
+    "outpost": true,
+    "on_play": [],
+    "activated": [
+      { "type": "combat", "amount": 3 }
+    ],
+    "passive": [],
+    "ally": [
+      { "type": "opponent_discards", "amount": 1 }
+    ],
+    "scrap": []
+  },
+  {
+    "id": 14,
+    "name": "Fleet HQ",
+    "faction": "Star Empire",
+    "type": "base",
+    "cost": 8,
+    "defense": 8,
+    "outpost": false,
+    "on_play": [],
+    "activated": [],
+    "passive": [
+      { "type": "combat_per_ship", "amount": 1 }
+    ],
+    "ally": [],
+    "scrap": []
+  },
+  {
+    "id": 15,
+    "name": "Federation Shuttle",
+    "faction": "Trade Federation",
+    "type": "ship",
+    "cost": 1,
+    "on_play": [
+      { "type": "trade", "amount": 2 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [
+      { "type": "authority", "amount": 4 }
+    ],
+    "scrap": []
+  },
+  {
+    "id": 16,
+    "name": "Cutter",
+    "faction": "Trade Federation",
+    "type": "ship",
+    "cost": 2,
+    "on_play": [
+      { "type": "trade", "amount": 2 },
+      { "type": "authority", "amount": 4 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [
+      { "type": "combat", "amount": 4 }
+    ],
+    "scrap": []
+  },
+  {
+    "id": 17,
+    "name": "Embassy Yacht",
+    "faction": "Trade Federation",
+    "type": "ship",
+    "cost": 3,
+    "on_play": [
+      { "type": "authority", "amount": 3 },
+      { "type": "trade", "amount": 2 }
+    ],
+    "activated": [],
+    "passive": [
+      { "type": "conditional", "require_bases": 2, "effect": { "type": "draw", "amount": 1 } }
+    ],
+    "ally": [],
+    "scrap": []
+  },
+  {
+    "id": 18,
+    "name": "Freighter",
+    "faction": "Trade Federation",
+    "type": "ship",
+    "cost": 4,
+    "on_play": [
+      { "type": "trade", "amount": 4 }
+    ],
+    "activated": [
+      { "type": "topdeck_next_purchase" }
+    ],
+    "passive": [],
+    "ally": [],
+    "scrap": []
+  },
+  {
+    "id": 19,
+    "name": "Trade Escort",
+    "faction": "Trade Federation",
+    "type": "ship",
+    "cost": 5,
+    "on_play": [
+      { "type": "trade", "amount": 3 },
+      { "type": "authority", "amount": 4 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [
+      { "type": "combat", "amount": 4 }
+    ],
+    "scrap": []
+  },
+  {
+    "id": 20,
+    "name": "Flagship",
+    "faction": "Trade Federation",
+    "type": "ship",
+    "cost": 6,
+    "on_play": [
+      { "type": "combat", "amount": 5 },
+      { "type": "draw", "amount": 1 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [
+      { "type": "authority", "amount": 5 }
+    ],
+    "scrap": []
+  },
+  {
+    "id": 21,
+    "name": "Command Ship",
+    "faction": "Trade Federation",
+    "type": "ship",
+    "cost": 8,
+    "on_play": [
+      { "type": "authority", "amount": 4 },
+      { "type": "combat", "amount": 5 },
+      { "type": "draw", "amount": 2 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [],
+    "scrap": []
+  },
+  {
+    "id": 22,
+    "name": "Trading Post",
+    "faction": "Trade Federation",
+    "type": "base",
+    "cost": 3,
+    "defense": 4,
+    "outpost": true,
+    "on_play": [],
+    "activated": [
+      { "type": "choose", "options": [
+        { "type": "trade", "amount": 1 },
+        { "type": "authority", "amount": 1 }
+      ]}
+    ],
+    "passive": [],
+    "ally": [],
+    "scrap": [
+      { "type": "combat", "amount": 3 }
+    ]
+  },
+  {
+    "id": 23,
+    "name": "Barter World",
+    "faction": "Trade Federation",
+    "type": "base",
+    "cost": 4,
+    "defense": 4,
+    "outpost": false,
+    "on_play": [],
+    "activated": [
+      { "type": "choose", "options": [
+        { "type": "trade", "amount": 2 },
+        { "type": "authority", "amount": 2 }
+      ]}
+    ],
+    "passive": [],
+    "ally": [],
+    "scrap": [
+      { "type": "combat", "amount": 5 }
+    ]
+  },
+  {
+    "id": 24,
+    "name": "Defense Center",
+    "faction": "Trade Federation",
+    "type": "base",
+    "cost": 5,
+    "defense": 5,
+    "outpost": true,
+    "on_play": [],
+    "activated": [
+      { "type": "choose", "options": [
+        [ { "type": "combat", "amount": 2 }, { "type": "authority", "amount": 3 } ],
+        [ { "type": "combat", "amount": 4 } ]
+      ]}
+    ],
+    "passive": [],
+    "ally": [],
+    "scrap": []
+  },
+  {
+    "id": 25,
+    "name": "Port of Call",
+    "faction": "Trade Federation",
+    "type": "base",
+    "cost": 6,
+    "defense": 6,
+    "outpost": true,
+    "on_play": [
+    { "type": "trade", "amount": 3 }
+    ],
+    "activated": [
+      { "type": "start_of_turn", "effect": { "type": "trade", "amount": 3 } }
+    ],
+    "passive": [],
+    "ally": [],
+    "scrap": [
+      { "type": "draw", "amount": 1 },
+      { "type": "destroy_base" }
+    ]
+  },
+  {
+    "id": 26,
+    "name": "Central Office",
+    "faction": "Trade Federation",
+    "type": "base",
+    "cost": 7,
+    "defense": 6,
+    "outpost": false,
+    "on_play": [
+     { "type": "combat", "amount": 2 },
+     { "type": "topdeck_next_purchase" }
+    ],
+    "activated": [
+      { "type": "start_of_turn", "effect": { "type": "trade", "amount": 2 } }
+    ],
+    "passive": [],
+    "ally": [
+      { "type": "draw", "amount": 1 }
+    ],
+    "scrap": []
+  },
+  {
+    "id": 27,
+    "name": "Blob Fighter",
+    "faction": "Blob",
+    "type": "ship",
+    "cost": 1,
+    "on_play": [
+      { "type": "combat", "amount": 3 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [
+      { "type": "draw", "amount": 1 }
+    ],
+    "scrap": []
+  },
+  {
+    "id": 28,
+    "name": "Battle Pod",
+    "faction": "Blob",
+    "type": "ship",
+    "cost": 2,
+    "on_play": [
+      { "type": "combat", "amount": 4 },
+      { "type": "destroy_target_trade_row" }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [],
+    "scrap": []
+  },
+  {
+    "id": 29,
+    "name": "Trade Pod",
+    "faction": "Blob",
+    "type": "ship",
+    "cost": 2,
+    "on_play": [
+      { "type": "trade", "amount": 3 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [
+      { "type": "combat", "amount": 2 }
+    ],
+    "scrap": []
+  },
+  {
+    "id": 30,
+    "name": "Ram",
+    "faction": "Blob",
+    "type": "ship",
+    "cost": 3,
+    "on_play": [
+      { "type": "combat", "amount": 5 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [
+      { "type": "trade", "amount": 2 }
+    ],
+    "scrap": [
+      { "type": "combat", "amount": 2 }
+    ]
+  },
+  {
+    "id": 31,
+    "name": "Blob Wheel",
+    "faction": "Blob",
+    "type": "base",
+    "cost": 3,
+    "defense": 5,
+    "outpost": false,
+    "on_play": [],
+    "activated": [
+      { "type": "start_of_turn", "effect": { "type": "combat", "amount": 1 } }
+    ],
+    "passive": [],
+    "ally": [],
+    "scrap": [
+      { "type": "trade", "amount": 3 }
+    ]
+  },
+  {
+    "id": 32,
+    "name": "Blob Destroyer",
+    "faction": "Blob",
+    "type": "ship",
+    "cost": 4,
+    "on_play": [
+      { "type": "combat", "amount": 6 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [
+      { "type": "destroy_base" },
+      { "type": "destroy_target_trade_row" }
+    ],
+    "scrap": []
+  },
+  {
+    "id": 33,
+    "name": "The Hive",
+    "faction": "Blob",
+    "type": "base",
+    "cost": 5,
+    "defense": 5,
+    "outpost": false,
+    "on_play": [
+    { "type": "combat", "amount": 6 }
+    ],
+    "activated": [
+      { "type": "start_of_turn", "effect": { "type": "combat", "amount": 3 } }
+    ],
+    "passive": [],
+    "ally": [
+      { "type": "draw", "amount": 1 }
+    ],
+    "scrap": []
+  },
+  {
+    "id": 34,
+    "name": "Blob Carrier",
+    "faction": "Blob",
+    "type": "ship",
+    "cost": 6,
+    "on_play": [
+      { "type": "combat", "amount": 7 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [
+      { "type": "topdeck_next_purchase" }
+    ],
+    "scrap": []
+  },
+  {
+    "id": 35,
+    "name": "Battle Blob",
+    "faction": "Blob",
+    "type": "ship",
+    "cost": 6,
+    "on_play": [
+      { "type": "combat", "amount": 8 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [
+      { "type": "draw", "amount": 1 }
+    ],
+    "scrap": [
+      { "type": "draw", "amount": 1 }
+    ]
+  },
+  {
+    "id": 36,
+    "name": "Mothership",
+    "faction": "Blob",
+    "type": "ship",
+    "cost": 7,
+    "on_play": [
+      { "type": "combat", "amount": 6 },
+      { "type": "draw", "amount": 1 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [
+      { "type": "draw", "amount": 1 }
+    ],
+    "scrap": []
+  },
+  {
+    "id": 37,
+    "name": "Blob World",
+    "faction": "Blob",
+    "type": "base",
+    "cost": 8,
+    "defense": 7,
+    "outpost": false,
+    "on_play": [],
+    "activated": [
+      { "type": "combat", "amount": 5 }
+    ],
+    "passive": [],
+    "ally": [
+      { "type": "draw", "amount": 1 }
+    ],
+    "scrap": []
+  },
+  {
+    "id": 38,
+    "name": "Trade Bot",
+    "faction": "Machine Cult",
+    "type": "ship",
+    "cost": 1,
+    "on_play": [
+      { "type": "trade", "amount": 1 },
+      { "type": "scrap_hand_or_discard" }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [],
+    "scrap": []
+  },
+  {
+    "id": 39,
+    "name": "Missile Bot",
+    "faction": "Machine Cult",
+    "type": "ship",
+    "cost": 2,
+    "on_play": [
+      { "type": "combat", "amount": 2 },
+      { "type": "scrap_hand_or_discard" }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [{ "type": "combat", "amount": 2 }],
+    "scrap": []
+  },
+  {
+    "id": 40,
+    "name": "Supply Bot",
+    "faction": "Machine Cult",
+    "type": "ship",
+    "cost": 3,
+    "on_play": [
+      { "type": "trade", "amount": 2 },
+      { "type": "scrap_hand_or_discard" }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [{ "type": "combat", "amount": 2 }],
+    "scrap": []
+  },
+  {
+    "id": 41,
+    "name": "Patrol Mech",
+    "faction": "Machine Cult",
+    "type": "ship",
+    "cost": 4,
+    "on_play": [
+    ],
+    "activated": [
+    { "type": "choose", "options": [
+        { "type": "trade", "amount": 3 },
+        { "type": "combat", "amount": 5 }
+      ]}
+      ],
+    "passive": [],
+    "ally": [
+      { "type": "scrap_hand_or_discard" }
+    ],
+    "scrap": []
+  },
+  {
+    "id": 42,
+    "name": "Stealth Needle",
+    "faction": "Machine Cult",
+    "type": "ship",
+    "cost": 4,
+    "on_play": [],
+    "activated": [
+      { "type": "copy_target_ship" }
+    ],
+    "passive": [],
+    "ally": [],
+    "scrap": []
+  },
+  {
+    "id": 43,
+    "name": "Battle Mech",
+    "faction": "Machine Cult",
+    "type": "ship",
+    "cost": 5,
+    "on_play": [
+      { "type": "combat", "amount": 4 },
+      { "type": "scrap_hand_or_discard" }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [
+      { "type": "draw", "amount": 1 }
+    ],
+    "scrap": []
+  },
+  {
+    "id": 44,
+    "name": "Missile Mech",
+    "faction": "Machine Cult",
+    "type": "ship",
+    "cost": 6,
+    "on_play": [
+      { "type": "combat", "amount": 6 }
+    ],
+    "activated": [],
+    "passive": [],
+    "ally": [
+      { "type": "destroy_base" }
+    ],
+    "scrap": [
+      { "type": "draw", "amount": 2 }
+    ]
+  },
+  {
+    "id": 45,
+    "name": "Battle Station",
+    "faction": "Machine Cult",
+    "type": "base",
+    "cost": 3,
+    "defense": 5,
+    "outpost": true,
+    "on_play": [],
+    "activated": [],
+    "passive": [],
+    "ally": [],
+    "scrap": [{ "type": "combat", "amount": 5 }]
+  },
+  {
+    "id": 46,
+    "name": "Mech World",
+    "faction": "Machine Cult",
+    "type": "base",
+    "cost": 5,
+    "defense": 6,
+    "outpost": true,
+    "on_play": [],
+    "activated": [],
+    "passive": [
+      { "type": "ally_any_faction" }
+    ],
+    "ally": [],
+    "scrap": []
+  },
+  {
+    "id": 47,
+    "name": "Junkyard",
+    "faction": "Machine Cult",
+    "type": "base",
+    "cost": 6,
+    "defense": 5,
+    "outpost": true,
+    "on_play": [],
+    "activated": [
+      { "type": "scrap_hand_or_discard" }
+    ],
+    "passive": [],
+    "ally": [],
+    "scrap": []
+  },
+  {
+    "id": 48,
+    "name": "Machine Base",
+    "faction": "Machine Cult",
+    "type": "base",
+    "cost": 7,
+    "defense": 6,
+    "outpost": true,
+    "on_play": [],
+    "activated": [
+      { "type": "combat", "amount": 3 }
+    ],
+    "passive": [],
+    "ally": [
+      { "type": "scrap_hand_or_discard" }
+    ],
+    "scrap": []
+  },
+  {
+    "id": 49,
+    "name": "Brain World",
+    "faction": "Machine Cult",
+    "type": "base",
+    "cost": 8,
+    "defense": 6,
+    "outpost": true,
+    "on_play": [],
+    "activated": [
+      { "type": "scrap_multiple", "amount": 2 },
+      { "type": "draw", "amount": 2 }
+    ],
+    "passive": [],
+    "ally": [],
+    "scrap": []
+  }
+]

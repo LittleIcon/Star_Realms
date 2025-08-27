@@ -1,0 +1,18 @@
+{
+  "ally_any_faction": 1.7854,
+  "authority": 0.7109,
+  "base_defense": -0.6432,
+  "combat": 2.418,
+  "copy_target_ship": -1.354,
+  "cost_penalty": -0.703,
+  "destroy_base": 2.1793,
+  "destroy_target_trade_row": -1.3331,
+  "discard": 0.5417,
+  "draw": 2.8107,
+  "outpost_bonus": 1.1834,
+  "per_ship_combat": -0.9216,
+  "scrap_hand_or_discard": 1.5136,
+  "scrap_multiple": 0.9212,
+  "topdeck_next_purchase": 0.2707,
+  "trade": 3.0011
+}
