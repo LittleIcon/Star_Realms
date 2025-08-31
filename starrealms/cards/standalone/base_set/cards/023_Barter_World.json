@@ -1,0 +1,56 @@
+{
+  "schema_version": 2,
+  "id": 23,
+  "name": "Barter World",
+  "faction": "Trade Federation",
+  "type": "base",
+  "cost": 4,
+  "defense": 4,
+  "outpost": false,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Barter World_activated_0",
+      "trigger": "activated",
+      "frequency": {
+        "once_per_turn": true
+      },
+      "effects": [
+        {
+          "type": "choose_one",
+          "options": [
+            {
+              "label": "Option 1",
+              "effects": [
+                {
+                  "type": "trade",
+                  "amount": 2
+                }
+              ]
+            },
+            {
+              "label": "Option 2",
+              "effects": [
+                {
+                  "type": "authority",
+                  "amount": 2
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "Barter World_scrap",
+      "trigger": "scrap_activated",
+      "effects": [
+        {
+          "type": "combat",
+          "amount": 5
+        }
+      ]
+    }
+  ]
+}

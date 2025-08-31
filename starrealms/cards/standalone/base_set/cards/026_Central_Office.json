@@ -1,0 +1,60 @@
+{
+  "schema_version": 2,
+  "id": 26,
+  "name": "Central Office",
+  "faction": "Trade Federation",
+  "type": "base",
+  "cost": 7,
+  "defense": 6,
+  "outpost": false,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Central Office_on_play_0",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "combat",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "id": "Central Office_on_play_1",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "topdeck_next_purchase"
+        }
+      ]
+    },
+    {
+      "id": "Central Office_turnstart_2",
+      "trigger": "on_turn_start",
+      "effects": [
+        {
+          "type": "trade",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "id": "Central Office_ally_3",
+      "trigger": "on_play",
+      "condition": {
+        "faction_in_play": {
+          "faction": "Trade Federation",
+          "min": 1,
+          "scope": "this_turn"
+        }
+      },
+      "effects": [
+        {
+          "type": "draw",
+          "amount": 1
+        }
+      ]
+    }
+  ]
+}

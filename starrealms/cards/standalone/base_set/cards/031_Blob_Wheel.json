@@ -1,0 +1,34 @@
+{
+  "schema_version": 2,
+  "id": 31,
+  "name": "Blob Wheel",
+  "faction": "Blob",
+  "type": "base",
+  "cost": 3,
+  "defense": 5,
+  "outpost": false,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Blob Wheel_turnstart_0",
+      "trigger": "on_turn_start",
+      "effects": [
+        {
+          "type": "combat",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "Blob Wheel_scrap",
+      "trigger": "scrap_activated",
+      "effects": [
+        {
+          "type": "trade",
+          "amount": 3
+        }
+      ]
+    }
+  ]
+}

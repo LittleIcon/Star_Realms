@@ -1,0 +1,40 @@
+{
+  "schema_version": 2,
+  "id": 34,
+  "name": "Blob Carrier",
+  "faction": "Blob",
+  "type": "ship",
+  "cost": 6,
+  "defense": null,
+  "outpost": false,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Blob Carrier_on_play_0",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "combat",
+          "amount": 7
+        }
+      ]
+    },
+    {
+      "id": "Blob Carrier_ally_1",
+      "trigger": "on_play",
+      "condition": {
+        "faction_in_play": {
+          "faction": "Blob",
+          "min": 1,
+          "scope": "this_turn"
+        }
+      },
+      "effects": [
+        {
+          "type": "topdeck_next_purchase"
+        }
+      ]
+    }
+  ]
+}

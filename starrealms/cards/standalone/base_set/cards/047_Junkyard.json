@@ -1,0 +1,26 @@
+{
+  "schema_version": 2,
+  "id": 47,
+  "name": "Junkyard",
+  "faction": "Machine Cult",
+  "type": "base",
+  "cost": 6,
+  "defense": 5,
+  "outpost": true,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Junkyard_activated_0",
+      "trigger": "activated",
+      "frequency": {
+        "once_per_turn": true
+      },
+      "effects": [
+        {
+          "type": "scrap_hand_or_discard"
+        }
+      ]
+    }
+  ]
+}

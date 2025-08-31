@@ -1,0 +1,33 @@
+{
+  "schema_version": 2,
+  "id": 28,
+  "name": "Battle Pod",
+  "faction": "Blob",
+  "type": "ship",
+  "cost": 2,
+  "defense": null,
+  "outpost": false,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Battle Pod_on_play_0",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "combat",
+          "amount": 4
+        }
+      ]
+    },
+    {
+      "id": "Battle Pod_on_play_1",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "destroy_target_trade_row"
+        }
+      ]
+    }
+  ]
+}

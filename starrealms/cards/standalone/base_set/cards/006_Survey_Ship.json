@@ -1,0 +1,44 @@
+{
+  "schema_version": 2,
+  "id": 6,
+  "name": "Survey Ship",
+  "faction": "Star Empire",
+  "type": "ship",
+  "cost": 3,
+  "defense": null,
+  "outpost": false,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Survey Ship_on_play_0",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "trade",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "Survey Ship_on_play_1",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "draw",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "Survey Ship_scrap",
+      "trigger": "scrap_activated",
+      "effects": [
+        {
+          "type": "opponent_discards",
+          "amount": 1
+        }
+      ]
+    }
+  ]
+}

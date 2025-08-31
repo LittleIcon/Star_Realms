@@ -1,0 +1,61 @@
+{
+  "schema_version": 2,
+  "id": 8,
+  "name": "Battlecruiser",
+  "faction": "Star Empire",
+  "type": "ship",
+  "cost": 6,
+  "defense": null,
+  "outpost": false,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Battlecruiser_on_play_0",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "combat",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "id": "Battlecruiser_on_play_1",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "draw",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "Battlecruiser_ally_2",
+      "trigger": "on_play",
+      "condition": {
+        "faction_in_play": {
+          "faction": "Star Empire",
+          "min": 1,
+          "scope": "this_turn"
+        }
+      },
+      "effects": [
+        {
+          "type": "opponent_discards",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "Battlecruiser_scrap",
+      "trigger": "scrap_activated",
+      "effects": [
+        {
+          "type": "draw",
+          "amount": 1
+        }
+      ]
+    }
+  ]
+}

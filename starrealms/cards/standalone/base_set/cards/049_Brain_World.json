@@ -1,0 +1,40 @@
+{
+  "schema_version": 2,
+  "id": 49,
+  "name": "Brain World",
+  "faction": "Machine Cult",
+  "type": "base",
+  "cost": 8,
+  "defense": 6,
+  "outpost": true,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Brain World_activated_0",
+      "trigger": "activated",
+      "frequency": {
+        "once_per_turn": true
+      },
+      "effects": [
+        {
+          "type": "scrap_multiple",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "id": "Brain World_activated_1",
+      "trigger": "activated",
+      "frequency": {
+        "once_per_turn": true
+      },
+      "effects": [
+        {
+          "type": "draw",
+          "amount": 2
+        }
+      ]
+    }
+  ]
+}

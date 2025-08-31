@@ -1,0 +1,44 @@
+{
+  "schema_version": 2,
+  "id": 37,
+  "name": "Blob World",
+  "faction": "Blob",
+  "type": "base",
+  "cost": 8,
+  "defense": 7,
+  "outpost": false,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Blob World_activated_0",
+      "trigger": "activated",
+      "frequency": {
+        "once_per_turn": true
+      },
+      "effects": [
+        {
+          "type": "combat",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "id": "Blob World_ally_1",
+      "trigger": "on_play",
+      "condition": {
+        "faction_in_play": {
+          "faction": "Blob",
+          "min": 1,
+          "scope": "this_turn"
+        }
+      },
+      "effects": [
+        {
+          "type": "draw",
+          "amount": 1
+        }
+      ]
+    }
+  ]
+}

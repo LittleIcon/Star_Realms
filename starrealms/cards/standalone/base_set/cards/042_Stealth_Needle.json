@@ -1,0 +1,26 @@
+{
+  "schema_version": 2,
+  "id": 42,
+  "name": "Stealth Needle",
+  "faction": "Machine Cult",
+  "type": "ship",
+  "cost": 4,
+  "defense": null,
+  "outpost": false,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Stealth Needle_activated_0",
+      "trigger": "activated",
+      "frequency": {
+        "once_per_turn": true
+      },
+      "effects": [
+        {
+          "type": "copy_target_ship"
+        }
+      ]
+    }
+  ]
+}

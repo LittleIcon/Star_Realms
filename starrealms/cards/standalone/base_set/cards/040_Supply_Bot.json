@@ -1,0 +1,50 @@
+{
+  "schema_version": 2,
+  "id": 40,
+  "name": "Supply Bot",
+  "faction": "Machine Cult",
+  "type": "ship",
+  "cost": 3,
+  "defense": null,
+  "outpost": false,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Supply Bot_on_play_0",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "trade",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "id": "Supply Bot_on_play_1",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "scrap_hand_or_discard"
+        }
+      ]
+    },
+    {
+      "id": "Supply Bot_ally_2",
+      "trigger": "on_play",
+      "condition": {
+        "faction_in_play": {
+          "faction": "Machine Cult",
+          "min": 1,
+          "scope": "this_turn"
+        }
+      },
+      "effects": [
+        {
+          "type": "combat",
+          "amount": 2
+        }
+      ]
+    }
+  ]
+}

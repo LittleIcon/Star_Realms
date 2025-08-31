@@ -1,0 +1,51 @@
+{
+  "schema_version": 2,
+  "id": 30,
+  "name": "Ram",
+  "faction": "Blob",
+  "type": "ship",
+  "cost": 3,
+  "defense": null,
+  "outpost": false,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Ram_on_play_0",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "combat",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "id": "Ram_ally_1",
+      "trigger": "on_play",
+      "condition": {
+        "faction_in_play": {
+          "faction": "Blob",
+          "min": 1,
+          "scope": "this_turn"
+        }
+      },
+      "effects": [
+        {
+          "type": "trade",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "id": "Ram_scrap",
+      "trigger": "scrap_activated",
+      "effects": [
+        {
+          "type": "combat",
+          "amount": 2
+        }
+      ]
+    }
+  ]
+}

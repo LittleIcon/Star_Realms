@@ -1,0 +1,44 @@
+{
+  "schema_version": 2,
+  "id": 9,
+  "name": "Dreadnaught",
+  "faction": "Star Empire",
+  "type": "ship",
+  "cost": 7,
+  "defense": null,
+  "outpost": false,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Dreadnaught_on_play_0",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "combat",
+          "amount": 7
+        }
+      ]
+    },
+    {
+      "id": "Dreadnaught_on_play_1",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "draw",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "Dreadnaught_scrap",
+      "trigger": "scrap_activated",
+      "effects": [
+        {
+          "type": "combat",
+          "amount": 5
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "schema_version": 2,
+  "id": 45,
+  "name": "Battle Station",
+  "faction": "Machine Cult",
+  "type": "base",
+  "cost": 3,
+  "defense": 5,
+  "outpost": true,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Battle Station_scrap",
+      "trigger": "scrap_activated",
+      "effects": [
+        {
+          "type": "combat",
+          "amount": 5
+        }
+      ]
+    }
+  ]
+}

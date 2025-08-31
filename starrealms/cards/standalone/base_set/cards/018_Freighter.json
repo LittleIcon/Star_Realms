@@ -1,0 +1,36 @@
+{
+  "schema_version": 2,
+  "id": 18,
+  "name": "Freighter",
+  "faction": "Trade Federation",
+  "type": "ship",
+  "cost": 4,
+  "defense": null,
+  "outpost": false,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Freighter_on_play_0",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "trade",
+          "amount": 4
+        }
+      ]
+    },
+    {
+      "id": "Freighter_activated_1",
+      "trigger": "activated",
+      "frequency": {
+        "once_per_turn": true
+      },
+      "effects": [
+        {
+          "type": "topdeck_next_purchase"
+        }
+      ]
+    }
+  ]
+}

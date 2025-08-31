@@ -1,0 +1,41 @@
+{
+  "schema_version": 2,
+  "id": 15,
+  "name": "Federation Shuttle",
+  "faction": "Trade Federation",
+  "type": "ship",
+  "cost": 1,
+  "defense": null,
+  "outpost": false,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Federation Shuttle_on_play_0",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "trade",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "id": "Federation Shuttle_ally_1",
+      "trigger": "on_play",
+      "condition": {
+        "faction_in_play": {
+          "faction": "Trade Federation",
+          "min": 1,
+          "scope": "this_turn"
+        }
+      },
+      "effects": [
+        {
+          "type": "authority",
+          "amount": 4
+        }
+      ]
+    }
+  ]
+}

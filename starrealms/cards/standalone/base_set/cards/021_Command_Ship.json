@@ -1,0 +1,44 @@
+{
+  "schema_version": 2,
+  "id": 21,
+  "name": "Command Ship",
+  "faction": "Trade Federation",
+  "type": "ship",
+  "cost": 8,
+  "defense": null,
+  "outpost": false,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Command Ship_on_play_0",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "authority",
+          "amount": 4
+        }
+      ]
+    },
+    {
+      "id": "Command Ship_on_play_1",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "combat",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "id": "Command Ship_on_play_2",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "draw",
+          "amount": 2
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "schema_version": 2,
+  "id": 25,
+  "name": "Port of Call",
+  "faction": "Trade Federation",
+  "type": "base",
+  "cost": 6,
+  "defense": 6,
+  "outpost": true,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Port of Call_on_play_0",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "trade",
+          "amount": 3
+        }
+      ]
+    },
+    {
+      "id": "Port of Call_turnstart_1",
+      "trigger": "on_turn_start",
+      "effects": [
+        {
+          "type": "trade",
+          "amount": 3
+        }
+      ]
+    },
+    {
+      "id": "Port of Call_scrap",
+      "trigger": "scrap_activated",
+      "effects": [
+        {
+          "type": "draw",
+          "amount": 1
+        },
+        {
+          "type": "destroy_base"
+        }
+      ]
+    }
+  ]
+}

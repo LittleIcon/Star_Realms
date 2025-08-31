@@ -1,0 +1,48 @@
+{
+  "schema_version": 2,
+  "id": 17,
+  "name": "Embassy Yacht",
+  "faction": "Trade Federation",
+  "type": "ship",
+  "cost": 3,
+  "defense": null,
+  "outpost": false,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Embassy Yacht_on_play_0",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "authority",
+          "amount": 3
+        }
+      ]
+    },
+    {
+      "id": "Embassy Yacht_on_play_1",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "trade",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "trigger": "on_turn_start",
+      "effects": [
+        {
+          "type": "conditional",
+          "require_bases": 2,
+          "effect": {
+            "type": "draw",
+            "amount": 1
+          }
+        }
+      ],
+      "id": "Embassy Yacht_passive_as_turnstart"
+    }
+  ]
+}

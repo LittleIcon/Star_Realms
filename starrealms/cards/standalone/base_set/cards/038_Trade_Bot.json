@@ -1,0 +1,33 @@
+{
+  "schema_version": 2,
+  "id": 38,
+  "name": "Trade Bot",
+  "faction": "Machine Cult",
+  "type": "ship",
+  "cost": 1,
+  "defense": null,
+  "outpost": false,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Trade Bot_on_play_0",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "trade",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "Trade Bot_on_play_1",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "scrap_hand_or_discard"
+        }
+      ]
+    }
+  ]
+}

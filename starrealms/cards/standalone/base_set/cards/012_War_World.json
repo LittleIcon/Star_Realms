@@ -1,0 +1,41 @@
+{
+  "schema_version": 2,
+  "id": 12,
+  "name": "War World",
+  "faction": "Star Empire",
+  "type": "base",
+  "cost": 5,
+  "defense": 4,
+  "outpost": true,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "War World_on_play_0",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "combat",
+          "amount": 3
+        }
+      ]
+    },
+    {
+      "id": "War World_ally_1",
+      "trigger": "on_play",
+      "condition": {
+        "faction_in_play": {
+          "faction": "Star Empire",
+          "min": 1,
+          "scope": "this_turn"
+        }
+      },
+      "effects": [
+        {
+          "type": "combat",
+          "amount": 3
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "schema_version": 2,
+  "id": 1,
+  "name": "Scout",
+  "faction": "Neutral",
+  "type": "ship",
+  "cost": 0,
+  "defense": null,
+  "outpost": false,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Scout_on_play_0",
+      "trigger": "on_play",
+      "effects": [
+        {
+          "type": "trade",
+          "amount": 1
+        }
+      ]
+    }
+  ]
+}

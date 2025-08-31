@@ -1,0 +1,23 @@
+{
+  "schema_version": 2,
+  "id": 46,
+  "name": "Mech World",
+  "faction": "Machine Cult",
+  "type": "base",
+  "cost": 5,
+  "defense": 6,
+  "outpost": true,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "trigger": "continuous:modify_ally_checks",
+      "effects": [
+        {
+          "type": "ally_any_faction"
+        }
+      ],
+      "id": "Mech World_cont_ally_any"
+    }
+  ]
+}

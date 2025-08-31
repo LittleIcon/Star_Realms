@@ -1,0 +1,24 @@
+{
+  "schema_version": 2,
+  "id": 14,
+  "name": "Fleet HQ",
+  "faction": "Star Empire",
+  "type": "base",
+  "cost": 8,
+  "defense": 8,
+  "outpost": false,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "trigger": "continuous:on_ship_played",
+      "effects": [
+        {
+          "type": "combat",
+          "amount": 1
+        }
+      ],
+      "id": "Fleet HQ_cont_ship_play"
+    }
+  ]
+}

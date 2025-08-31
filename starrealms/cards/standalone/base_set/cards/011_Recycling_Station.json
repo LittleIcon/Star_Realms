@@ -1,0 +1,46 @@
+{
+  "schema_version": 2,
+  "id": 11,
+  "name": "Recycling Station",
+  "faction": "Star Empire",
+  "type": "base",
+  "cost": 4,
+  "defense": 4,
+  "outpost": true,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Recycling Station_activated_0",
+      "trigger": "activated",
+      "frequency": {
+        "once_per_turn": true
+      },
+      "effects": [
+        {
+          "type": "choose_one",
+          "options": [
+            {
+              "label": "Option 1",
+              "effects": [
+                {
+                  "type": "discard_then_draw",
+                  "amount": 2
+                }
+              ]
+            },
+            {
+              "label": "Option 2",
+              "effects": [
+                {
+                  "type": "trade",
+                  "amount": 1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
