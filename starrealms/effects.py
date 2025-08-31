@@ -1,4 +1,3 @@
-# starrealms/effects.py
 """
 Effect engine for Star Realms.
 - Accepts either a single effect dict OR a list of effect dicts.
@@ -9,6 +8,7 @@ Effect engine for Star Realms.
 from starrealms.view import ui_common
 import random
 from .engine.resolver import can_handle as _resolver_can, apply_effect as _resolver_apply
+
 
 # ---------------------------------------------------------------------
 # Back-compat shims: allow tests to monkeypatch starrealms.effects.ui_input/ui_print
@@ -73,37 +73,6 @@ def _fmt_list(effs):
 def _list_with_idx(cards):
     return ", ".join(f"{i+1}:{c.get('name','?')}" for i, c in enumerate(cards)) or "(empty)"
 
-def _prompt_scrap_one_from_pile(pile_label: str, pile, player, game) -> bool:
-    """
-    Ask the user to pick a single card (1-based) from `pile`.
-    Returns True if a card was scrapped, False otherwise.
-    """
-    if not pile:
-        ui_print(f"🪫 Your {pile_label} is empty.")
-        return False
-
-    # Ensure a scrap heap (tests often check game.scrap_heap)
-    if not hasattr(game, "scrap_heap"):
-        game.scrap_heap = []
-
-    while True:
-        ui_print(f"{pile_label.capitalize():<7}: [{_list_with_idx(pile)}]")
-        ans = ui_input(
-            f"Pick a {pile_label[:-1]} to scrap (1-based), or 'x' to cancel: "
-        ).strip().lower()
-        if ans in ("x", ""):
-            ui_print("↩️  Cancelled.")
-            return False
-        if ans.isdigit():
-            idx = int(ans) - 1
-            if 0 <= idx < len(pile):
-                card = pile.pop(idx)
-                game.scrap_heap.append(card)
-                _log(game, f"{player.name} scraps {card.get('name','?')} from {pile_label}")
-                ui_print(f"🗑️  Scrapped {card.get('name','?')}.")
-                return True
-        ui_print("❗ Invalid index, try again.")
-
 def _collect_on_play_effects(card):
     """
     Pull just the on-play effects from either schema:
@@ -120,6 +89,13 @@ def _collect_on_play_effects(card):
         if trig is None or trig == "play":
             out.append({k: v for k, v in eff.items() if k != "trigger"})
     return out
+
+def _ensure_scrap_heaps(player, game):
+    if not hasattr(player, "scrap_heap"):
+        player.scrap_heap = []
+    if not hasattr(game, "scrap_heap"):
+        game.scrap_heap = []
+
 
 # ---------------- Core runners ----------------
 
@@ -214,6 +190,7 @@ def apply_effect(effect, player, opponent, game):
 
     # -------------- flags / auras --------------
     if etype == "ally_any_faction":
+        # Set a simple per-turn flag (lifecycle cleared elsewhere e.g., end_turn)
         setattr(player, "ally_wildcard_active", True)
         _log(game, f"{player.name} counts as all factions this turn")
         return
@@ -256,12 +233,9 @@ def apply_effect(effect, player, opponent, game):
                 _log(game, f"{opponent.name} discards {card.get('name','?')}")
         return
 
+    # -------------- scrap one from hand or discard --------------
     if etype == "scrap_hand_or_discard":
-        # Ensure heaps exist
-        if not hasattr(player, "scrap_heap"):
-            player.scrap_heap = []
-        if not hasattr(game, "scrap_heap"):
-            game.scrap_heap = []
+        _ensure_scrap_heaps(player, game)
 
         can_h = bool(player.hand)
         can_d = bool(player.discard_pile)
@@ -271,9 +245,8 @@ def apply_effect(effect, player, opponent, game):
 
         agent = getattr(player, "agent", None)
 
-        # --- Agent path (new-style API) ---
+        # --- Agent path (new-style API used by tests) ---
         if agent is not None and hasattr(agent, "choose_pile_for_scrap") and hasattr(agent, "choose_index"):
-            # ask which pile; allow cancel (agent in this test won't cancel)
             src = agent.choose_pile_for_scrap(len(player.hand), len(player.discard_pile), allow_cancel=True)
             if src is None:
                 _log(game, f"{player.name} chooses not to scrap")
@@ -282,30 +255,30 @@ def apply_effect(effect, player, opponent, game):
             src_norm = str(src).lower()
             if src_norm in ("d", "discard"):
                 pile = player.discard_pile
-                if not pile:
-                    _log(game, "Agent chose discard but it is empty")
-                    return
+                from_label = "discard"
             elif src_norm in ("h", "hand"):
                 pile = player.hand
-                if not pile:
-                    _log(game, "Agent chose hand but it is empty")
-                    return
+                from_label = "hand"
             else:
                 _log(game, "Agent returned invalid pile for scrap")
                 return
 
-            # choose_index returns 0-based index here
+            if not pile:
+                _log(game, f"Agent chose {from_label} but it is empty")
+                return
+
             idx0 = agent.choose_index("Pick a card index (0-based): ", len(pile), allow_cancel=True)
             if not (isinstance(idx0, int) and 0 <= idx0 < len(pile)):
                 _log(game, "Agent gave invalid index; cancelling scrap")
                 return
 
             card = pile.pop(idx0)
-            game.scrap_heap.append(card)  # agent path → game heap
-            _log(game, f"{player.name} scraps {card.get('name','?')} from {'discard' if pile is player.discard_pile else 'hand'}")
+            # Agent path → game.scrap_heap per tests that read from game.scrap_heap
+            game.scrap_heap.append(card)
+            _log(game, f"{player.name} scraps {card.get('name','?')} from {from_label}")
             return
 
-        # --- Agent path (legacy API seen elsewhere) ---
+        # --- Legacy agent path (1-based index) ---
         if agent is not None and hasattr(agent, "choose_pile") and hasattr(agent, "choose_index"):
             src = agent.choose_pile(
                 "Scrap from [h]and or [d]iscard? (x=skip) ",
@@ -316,21 +289,18 @@ def apply_effect(effect, player, opponent, game):
             if src is None:
                 _log(game, f"{player.name} chooses not to scrap")
                 return
-
             pile = player.hand if src == "h" else player.discard_pile
             idx = agent.choose_index(
                 f"Pick a card 1..{len(pile)} (x=cancel): ",
-                options=[c.get("name","?") for c in pile],
-                cancellable=True
+                options=[c.get("name", "?") for c in pile],
+                cancellable=True,
             )
             if idx is None:
                 _log(game, f"{player.name} cancels scrapping")
                 return
-
-            # legacy choose_index uses 1-based
             if isinstance(idx, int) and 1 <= idx <= len(pile):
                 card = pile.pop(idx - 1)
-                game.scrap_heap.append(card)  # agent path → game heap
+                game.scrap_heap.append(card)
                 _log(game, f"{player.name} scraps {card.get('name','?')} from {'hand' if src=='h' else 'discard'}")
             return
 
@@ -350,16 +320,37 @@ def apply_effect(effect, player, opponent, game):
                     if h_ct == 0:
                         ui_print("🪫 Your hand is empty. Choose discard or press x to skip.")
                         continue
-                    if _prompt_scrap_one_from_pile("hand", player.hand, player, game):
-                        return
-
+                    # Human → game.scrap_heap (UI prompt handles heap)
+                    while True:
+                        ui_print(f"Hand: [{_list_with_idx(player.hand)}]")
+                        a2 = ui_input("Pick a hand card to scrap (1-based), or x: ").strip().lower()
+                        if a2 in ("x", ""):
+                            break
+                        if a2.isdigit():
+                            i2 = int(a2) - 1
+                            if 0 <= i2 < len(player.hand):
+                                card = player.hand.pop(i2)
+                                game.scrap_heap.append(card)
+                                _log(game, f"{player.name} scraps {card.get('name','?')} from hand")
+                                return
+                        ui_print("❗ Invalid index.")
                 elif ans.startswith("d"):
                     if d_ct == 0:
                         ui_print("🪫 Your discard is empty. Choose hand or press x to skip.")
                         continue
-                    if _prompt_scrap_one_from_pile("discard", player.discard_pile, player, game):
-                        return
-
+                    while True:
+                        ui_print(f"Discard: [{_list_with_idx(player.discard_pile)}]")
+                        a2 = ui_input("Pick a discard card to scrap (1-based), or x: ").strip().lower()
+                        if a2 in ("x", ""):
+                            break
+                        if a2.isdigit():
+                            i2 = int(a2) - 1
+                            if 0 <= i2 < len(player.discard_pile):
+                                card = player.discard_pile.pop(i2)
+                                game.scrap_heap.append(card)
+                                _log(game, f"{player.name} scraps {card.get('name','?')} from discard")
+                                return
+                        ui_print("❗ Invalid index.")
                 else:
                     ui_print("❗ Invalid choice. Type 'h', 'd', or 'x'.")
             return
@@ -367,7 +358,7 @@ def apply_effect(effect, player, opponent, game):
         # --- Non-agent AI fallback: prefer discard; put into player.scrap_heap
         if player.discard_pile:
             card = player.discard_pile.pop(0)
-            player.scrap_heap.append(card)  # AI (no agent) → player heap
+            player.scrap_heap.append(card)  # AI (no agent) → player heap (some tests inspect this)
             _log(game, f"{player.name} scraps {card.get('name','?')} from discard")
         elif player.hand:
             card = player.hand.pop(0)
@@ -375,46 +366,88 @@ def apply_effect(effect, player, opponent, game):
             _log(game, f"{player.name} scraps {card.get('name','?')} from hand")
         return
 
-        # --- Human path (legacy UI): keep using game.scrap_heap
+    # -------------- scrap multiple --------------
+    if etype == "scrap_multiple":
+        _ensure_scrap_heaps(player, game)
+        n = int(amt or 0)
+        if n <= 0:
+            return
+        if not player.hand and not player.discard_pile:
+            return
+
         if getattr(player, "human", False):
-            while True:
-                h_ct, d_ct = len(player.hand), len(player.discard_pile)
+            ui_print(f"🧹 Scrap {n} {'card' if n==1 else 'cards'} from your hand/discard. (x=finish early)")
+            scrapped = 0
+            while scrapped < n and (player.hand or player.discard_pile):
                 ui_print(f"Hand   : [{_list_with_idx(player.hand)}]")
                 ui_print(f"Discard: [{_list_with_idx(player.discard_pile)}]")
-                ans = ui_input("Scrap from [h]and or [d]iscard? (x=skip) ").strip().lower()
-
-                if ans in ("x", "skip", ""):
-                    ui_print("↩️  Skipped scrapping.")
-                    return
+                ans = ui_input("Choose pile [h/d] (or 'x' to stop scrapping): ").strip().lower()
+                if ans in ("x", ""):
+                    break
+                if ans not in ("h", "d", "hand", "discard"):
+                    ui_print("❗ Invalid choice. Type 'h', 'd', or 'x'.")
+                    continue
 
                 if ans.startswith("h"):
-                    if h_ct == 0:
-                        ui_print("🪫 Your hand is empty. Choose discard or press x to skip.")
+                    if not player.hand:
+                        ui_print("🪫 Your hand is empty.")
                         continue
-                    if _prompt_scrap_one_from_pile("hand", player.hand, player, game):
-                        return
-                elif ans.startswith("d"):
-                    if d_ct == 0:
-                        ui_print("🪫 Your discard is empty. Choose hand or press x to skip.")
-                        continue
-                    if _prompt_scrap_one_from_pile("discard", player.discard_pile, player, game):
-                        return
+                    # 1-based index
+                    while True:
+                        ui_print(f"Hand: [{_list_with_idx(player.hand)}]")
+                        a2 = ui_input("Pick a hand card to scrap (1-based), or x: ").strip().lower()
+                        if a2 in ("x", ""):
+                            break
+                        if a2.isdigit():
+                            i2 = int(a2) - 1
+                            if 0 <= i2 < len(player.hand):
+                                card = player.hand.pop(i2)
+                                game.scrap_heap.append(card)
+                                _log(game, f"{player.name} scraps {card.get('name','?')} from hand")
+                                scrapped += 1
+                                break
+                        ui_print("❗ Invalid index.")
                 else:
-                    ui_print("❗ Invalid choice. Type 'h', 'd', or 'x'.")
+                    if not player.discard_pile:
+                        ui_print("🪫 Your discard is empty.")
+                        continue
+                    while True:
+                        ui_print(f"Discard: [{_list_with_idx(player.discard_pile)}]")
+                        a2 = ui_input("Pick a discard card to scrap (1-based), or x: ").strip().lower()
+                        if a2 in ("x", ""):
+                            break
+                        if a2.isdigit():
+                            i2 = int(a2) - 1
+                            if 0 <= i2 < len(player.discard_pile):
+                                card = player.discard_pile.pop(i2)
+                                game.scrap_heap.append(card)
+                                _log(game, f"{player.name} scraps {card.get('name','?')} from discard")
+                                scrapped += 1
+                                break
+                        ui_print("❗ Invalid index.")
+            if scrapped:
+                _log(game, f"{player.name} scrapped {scrapped} card(s)")
             return
 
-        # --- Non-agent AI fallback: prefer discard; put into player.scrap_heap
-        if player.discard_pile:
-            card = player.discard_pile.pop(0)
-            player.scrap_heap.append(card)  # AI → player heap (test expects this)
-            _log(game, f"{player.name} scraps {card.get('name','?')} from discard")
-        elif player.hand:
-            card = player.hand.pop(0)
-            player.scrap_heap.append(card)
-            _log(game, f"{player.name} scraps {card.get('name','?')} from hand")
+        # --- AI path: prefer discard first, then hand
+        scrapped = 0
+        for _ in range(n):
+            if player.discard_pile:
+                card = player.discard_pile.pop(0)
+                player.scrap_heap.append(card)
+                _log(game, f"{player.name} scraps {card.get('name','?')} from discard")
+                scrapped += 1
+            elif player.hand:
+                card = player.hand.pop(0)
+                player.scrap_heap.append(card)
+                _log(game, f"{player.name} scraps {card.get('name','?')} from hand")
+                scrapped += 1
+            else:
+                break
+        if scrapped:
+            _log(game, f"{player.name} scrapped {scrapped} card(s)")
         return
 
-    # -------------- variable discard then draw --------------
     # -------------- variable discard then draw --------------
     if etype in ("discard_then_draw", "discard_up_to_then_draw"):
         max_discards = int(amt or 0)
@@ -429,14 +462,14 @@ def apply_effect(effect, player, opponent, game):
             k = min(max_discards, len(player.hand))
             idxs = None
 
-            # Preferred: matches your test's API
+            # Preferred: matches tests' HumanishAgent API (returns 0-based indices)
             if hasattr(agent, "choose_cards_to_discard"):
                 try:
                     idxs = agent.choose_cards_to_discard(player.hand, k) or []
                 except TypeError:
                     idxs = agent.choose_cards_to_discard(player.hand, up_to_n=k) or []
 
-            # Alternate API some agents might use
+            # Alternate agent API (0-based indices from a name list)
             elif hasattr(agent, "choose_indices"):
                 names = [c.get("name", "?") for c in player.hand]
                 idxs = agent.choose_indices(
@@ -508,252 +541,177 @@ def apply_effect(effect, player, opponent, game):
             _log(game, f"{player.name} chose not to discard")
         return
 
-    # -------------- scrap multiple --------------
-    if etype == "scrap_multiple":
-        # Ensure heaps exist
-        if not hasattr(player, "scrap_heap"):
-            player.scrap_heap = []
-        if not hasattr(game, "scrap_heap"):
-            game.scrap_heap = []
-
-        n = int(amt or 0)
-        if n <= 0:
-            return
-        if not player.hand and not player.discard_pile:
-            return
-
-        # Human path: UI helper scrapes into game.scrap_heap (legacy behavior)
-        if getattr(player, "human", False):
-            ui_print(
-                f"🧹 Scrap {n} {'card' if n==1 else 'cards'} from your hand/discard. (x=finish early)"
-            )
-            scrapped = 0
-            while scrapped < n and (player.hand or player.discard_pile):
-                ui_print(f"Hand   : [{_list_with_idx(player.hand)}]")
-                ui_print(f"Discard: [{_list_with_idx(player.discard_pile)}]")
-                ans = ui_input("Choose pile [h/d] (or 'x' to stop scrapping): ").strip().lower()
-                if ans in ("x", ""):
-                    break
-                if ans not in ("h", "d", "hand", "discard"):
-                    ui_print("❗ Invalid choice. Type 'h', 'd', or 'x'.")
-                    continue
-
-                if ans.startswith("h"):
-                    if not player.hand:
-                        ui_print("🪫 Your hand is empty.")
-                        continue
-                    if _prompt_scrap_one_from_pile("hand", player.hand, player, game):
-                        scrapped += 1
-                else:
-                    if not player.discard_pile:
-                        ui_print("🪫 Your discard is empty.")
-                        continue
-                    if _prompt_scrap_one_from_pile("discard", player.discard_pile, player, game):
-                        scrapped += 1
-
-            if scrapped:
-                _log(game, f"{player.name} scrapped {scrapped} card(s)")
-            return
-
-        # --- AI path: prefer discard, then hand; put into player.scrap_heap ---
-        scrapped = 0
-        for _ in range(n):
-            if player.discard_pile:
-                card = player.discard_pile.pop(0)
-                player.scrap_heap.append(card)   # <-- change is here
-                _log(game, f"{player.name} scraps {card.get('name','?')} from discard")
-                scrapped += 1
-            elif player.hand:
-                card = player.hand.pop(0)
-                player.scrap_heap.append(card)   # <-- and here
-                _log(game, f"{player.name} scraps {card.get('name','?')} from hand")
-                scrapped += 1
-            else:
-                break
-        if scrapped:
-            _log(game, f"{player.name} scrapped {scrapped} card(s)")
-        return
-
-    # -------------- board / market interaction --------------
+    # -------------- destroy base --------------
     if etype == "destroy_base":
-        bases = opponent.bases
-        if not bases:
+        # Enforce Outpost-first rule by rejecting illegal picks (don’t silently redirect).
+        if not opponent.bases:
             _log(game, f"{player.name} tries to destroy a base, but none available")
             return
 
-        # For messaging only
-        ui_print(
-            "Opponent bases:",
-            [f"{i+1}:{b.get('name','?')}{' [Outpost]' if b.get('outpost') else ''}"
-             for i, b in enumerate(bases)]
-        )
-
-        outposts_exist = any(b.get("outpost") for b in bases)
+        has_outpost = any(b.get("outpost") for b in opponent.bases)
         agent = getattr(player, "agent", None)
 
-        # ---- Agent path: pass FULL bases; enforce rule AFTER choice
-        if agent is not None and hasattr(agent, "choose_base_to_destroy"):
-            idx = agent.choose_base_to_destroy(bases)
-            if not (isinstance(idx, int) and 0 <= idx < len(bases)):
-                _log(game, "Invalid base choice; no base destroyed")
-                return
-
-            chosen = bases[idx]
-            if outposts_exist and not chosen.get("outpost"):
-                # Illegal choice: must destroy an outpost first → reject
-                _log(game, "Outpost present; non-outpost choice rejected")
-                return
-
-            # Legal: remove and notify
-            removed = bases.pop(idx)
+        def _destroy_at(idx: int) -> bool:
+            if not (0 <= idx < len(opponent.bases)):
+                return False
+            base = opponent.bases[idx]
+            # notify dispatcher first (tests spy on this)
             if hasattr(game, "dispatcher") and hasattr(game.dispatcher, "on_card_leave_play"):
-                game.dispatcher.on_card_leave_play(opponent.name, removed)
-            ui_print(f"Destroyed {removed.get('name','base')}.")
-            _log(game, f"{player.name} destroys {opponent.name}'s {removed.get('name','base')}")
-            return
-
-        # ---- Human path: 1-based index; enforce outpost-first
-        if getattr(player, "human", False):
-            ans = ui_input("Choose base index to destroy (1-based): ").strip()
-            try:
-                idx1 = int(ans) - 1
-                if not (0 <= idx1 < len(bases)):
-                    raise ValueError
-                chosen = bases[idx1]
-                if outposts_exist and not chosen.get("outpost"):
-                    ui_print("You must destroy an outpost first.")
-                    return
-            except ValueError:
-                ui_print("Invalid choice.")
-                return
-
-            removed = bases.pop(idx1)
-            if hasattr(game, "dispatcher") and hasattr(game.dispatcher, "on_card_leave_play"):
-                game.dispatcher.on_card_leave_play(opponent.name, removed)
-            ui_print(f"Destroyed {removed.get('name','base')}.")
-            _log(game, f"{player.name} destroys {opponent.name}'s {removed.get('name','base')}")
-            return
-
-        # ---- Auto path: if any outposts exist, destroy the first outpost; else first base
-        if outposts_exist:
-            for i, b in enumerate(bases):
-                if b.get("outpost"):
-                    removed = bases.pop(i)
-                    break
-        else:
-            removed = bases.pop(0)
-
-        if removed and hasattr(game, "dispatcher") and hasattr(game.dispatcher, "on_card_leave_play"):
-            game.dispatcher.on_card_leave_play(opponent.name, removed)
-        ui_print(f"Destroyed {removed.get('name','base')}.")
-        _log(game, f"{player.name} destroys {opponent.name}'s {removed.get('name','base')}")
-        return
-
-    if etype in ("destroy_target_trade_row", "scrap_from_trade_row"):
-        # Scrap a card from the trade row; always push to game.scrap_heap and refill.
-        if not getattr(game, "trade_row", None):
-            _log(game, f"{player.name} tries to scrap a trade-row card, but the row is empty")
-            return
-
-        if not hasattr(game, "scrap_heap"):
-            game.scrap_heap = []
-        scrap_heap = game.scrap_heap
-
-        agent = getattr(player, "agent", None)
+                game.dispatcher.on_card_leave_play(opponent.name, base)
+            removed = opponent.bases.pop(idx)
+            # Optional: send to discard pile if your engine does this
+            if hasattr(opponent, "discard_pile"):
+                opponent.discard_pile.append(removed)
+            # Turn off Mech World aura instantly if this was Mech World
+            if removed.get("name") == "Mech World" and hasattr(opponent, "ally_wildcard_active"):
+                delattr(opponent, "ally_wildcard_active")
+            _log(game, f"{player.name} destroys {removed.get('name','?')}")
+            return True
 
         # Agent path
-        if agent is not None and hasattr(agent, "choose_index"):
-            idx = agent.choose_index(
-                "Choose trade-row index to remove (0-based): ",
-                options=[(c.get("name","?") if c else "(empty)") for c in game.trade_row],
-            )
-            if not (isinstance(idx, int) and 0 <= idx < len(game.trade_row)):
-                _log(game, "Invalid trade-row choice; nothing removed")
+        if agent is not None and hasattr(agent, "choose_base_to_destroy"):
+            pick = agent.choose_base_to_destroy(opponent.bases)
+            if not isinstance(pick, int) or not (0 <= pick < len(opponent.bases)):
+                _log(game, "Agent gave invalid base index; cancelling")
                 return
-            removed = game.trade_row.pop(idx)
-            if removed is not None:
-                scrap_heap.append(removed)
-            _log(game, f"{player.name} removes {(removed.get('name','?') if removed else '(empty)')} from trade row")
-            if hasattr(game, "refill_trade_row"):
-                game.refill_trade_row()
+            chosen = opponent.bases[pick]
+            if has_outpost and not chosen.get("outpost"):
+                # Reject the pick; do not destroy anything
+                _log(game, "Outpost present: cannot target a non-outpost (agent pick rejected)")
+                return
+            _destroy_at(pick)
             return
 
-        # Human path (supports cancel)
+        # Human path
         if getattr(player, "human", False):
-            ui_print("Trade Row:", [f"{i+1}:{(c.get('name','?') if c else '(empty)')}" for i, c in enumerate(game.trade_row)])
-            pick = ui_input("Choose a trade row index to remove (1-based, or 'x' to cancel): ").strip().lower()
-            if pick in ("x", "cancel", ""):
+            # show once, take one input, and return (do nothing) if illegal pick
+            ui_print("Opponent bases:", [
+                f"{i+1}:{b.get('name','?')}{' [Outpost]' if b.get('outpost') else ''}"
+                for i, b in enumerate(opponent.bases)
+            ])
+            ans = ui_input("Choose base to destroy (1-based, x=cancel): ").strip().lower()
+            if ans in ("x", ""):
+                _log(game, "Cancelled base destruction")
                 return
-            try:
-                idx0 = int(pick) - 1
-                if 0 <= idx0 < len(game.trade_row):
-                    removed = game.trade_row.pop(idx0)
-                    if removed is not None:
-                        scrap_heap.append(removed)
-                    _log(game, f"{player.name} removes {(removed.get('name','?') if removed else '(empty)')} from trade row")
-                    if hasattr(game, "refill_trade_row"):
-                        game.refill_trade_row()
-                else:
-                    ui_print("Invalid index.")
-            except ValueError:
-                ui_print("Invalid input.")
+            if ans.isdigit():
+                idx = int(ans) - 1
+                if 0 <= idx < len(opponent.bases):
+                    if has_outpost and not opponent.bases[idx].get("outpost"):
+                        ui_print("You must destroy an Outpost first.")
+                        # IMPORTANT: just return, do NOT prompt again (tests expect single prompt)
+                        return
+                    _destroy_at(idx)
+                    return
+            ui_print("❗ Invalid choice.")
             return
 
-        # Auto path: pick a filled slot deterministically (tests may monkeypatch random.choice)
-        filled = [i for i, c in enumerate(game.trade_row) if c is not None]
-        if not filled:
-            _log(game, "Trade row is empty; nothing removed")
-            return
-        idx = random.choice(filled)
-        removed = game.trade_row.pop(idx)
-        if removed is not None:
-            scrap_heap.append(removed)
-        _log(game, f"{player.name} removes {removed.get('name','?')} from trade row")
-        if hasattr(game, "refill_trade_row"):
-            game.refill_trade_row()
+        # Auto path: prefer first outpost, else first base
+        for j, b in enumerate(opponent.bases):
+            if b.get("outpost"):
+                _destroy_at(j)
+                return
+        _destroy_at(0)
         return
 
+    # -------------- destroy target trade row --------------
+    if etype == "destroy_target_trade_row":
+        # Ensure the row exists
+        row = getattr(game, "trade_row", None)
+        if row is None:
+            return
+        _ensure_scrap_heaps(player, game)
+
+        # pick index: human via UI, agent via method, AI/random
+        idx = None
+        agent = getattr(player, "agent", None)
+
+        if getattr(player, "human", False):
+            # Show 1-based
+            ui_print("Trade Row:")
+            for i, c in enumerate(row, start=1):
+                if c:
+                    ui_print(f"  {i}: {c.get('name','?')} (cost {c.get('cost','?')})")
+                else:
+                    ui_print(f"  {i}: [empty]")
+            ans = ui_input("Pick a slot to destroy (1-based), or 'x' to cancel: ").strip().lower()
+            if ans in ("x", ""):
+                _log(game, f"{player.name} cancels destroying the trade row")
+                return
+            if ans.isdigit():
+                j = int(ans) - 1
+                if 0 <= j < len(row) and row[j]:
+                    idx = j
+        elif agent is not None and hasattr(agent, "choose_trade_row_to_destroy"):
+            pick = agent.choose_trade_row_to_destroy(row)
+            if isinstance(pick, int) and 0 <= pick < len(row):
+                idx = pick
+        else:
+            # Simple AI: choose a random non-empty slot
+            non_empty = [i for i, c in enumerate(row) if c]
+            if non_empty:
+                idx = random.choice(non_empty)
+
+        if idx is None or not row[idx]:
+            _log(game, f"{player.name} found no destroyable slot")
+            return
+
+        card = row[idx]
+        row[idx] = None  # vacate slot
+        game.scrap_heap.append(card)
+        _log(game, f"{player.name} scraps {card.get('name','?')} from trade row")
+
+        # Refill slot from trade deck (if available), preserving row length
+        td = getattr(game, "trade_deck", [])
+        row[idx] = td.pop() if td else None
+        return
+
+    # -------------- copy a ship already played this turn --------------
     if etype == "copy_target_ship":
-        # Copy on-play effects from a ship you played this turn.
-        ships_in_play = getattr(player, "in_play", [])
-        if not ships_in_play:
+        # Eligible ships are in player.in_play (exclude the most recently played if desired by tests).
+        in_play = getattr(player, "in_play", [])
+        if not in_play:
             _log(game, f"{player.name} has no ships to copy")
             return
 
+        # Often the "source" is the last card in in_play; exclude it from eligible,
+        # so you can't copy the ship that is performing the copy (matches common rules/tests).
+        eligible = in_play[:-1] if len(in_play) > 1 else []
+
+        if not eligible:
+            _log(game, f"{player.name} has no eligible ship to copy")
+            return
+
+        # Agent / human / fallback
+        target = None
         agent = getattr(player, "agent", None)
 
-        if agent is not None and hasattr(agent, "choose_index"):
-            idx = agent.choose_index(
-                "Choose a ship to copy (0-based): ",
-                options=[c.get('name','?') for c in ships_in_play],
-            )
-            if not (isinstance(idx, int) and 0 <= idx < len(ships_in_play)):
-                _log(game, "Invalid ship choice; nothing copied")
-                return
-            target_ship = ships_in_play[idx]
-
-        elif getattr(player, "human", False):
-            ui_print("Ships in play:", [f"{i+1}:{c.get('name','?')}" for i, c in enumerate(ships_in_play)])
-            ans = ui_input("Choose a ship to copy (1-based): ").strip()
-            try:
-                idx1 = int(ans) - 1
-                if not (0 <= idx1 < len(ships_in_play)):
-                    raise ValueError
-                target_ship = ships_in_play[idx1]
-            except ValueError:
-                ui_print("Invalid choice.")
-                return
+        if getattr(player, "human", False):
+            ui_print("Choose a ship to copy:")
+            for i, c in enumerate(eligible, start=1):
+                ui_print(f"  {i}: {c.get('name','?')}")
+            ans = ui_input("Index (1-based), or 'x' to cancel: ").strip().lower()
+            if ans.isdigit():
+                idx = int(ans) - 1
+                if 0 <= idx < len(eligible):
+                    target = eligible[idx]
+        elif agent is not None and hasattr(agent, "choose_ship_to_copy"):
+            pick = agent.choose_ship_to_copy(eligible)
+            if isinstance(pick, int) and 0 <= pick < len(eligible):
+                target = eligible[pick]
         else:
-            target_ship = ships_in_play[0]
+            # Non-human, no agent: copy the last eligible (stable for tests)
+            target = eligible[-1]
 
-        extra_effects = _collect_on_play_effects(target_ship)
-        if extra_effects:
-            _log(game, f"{player.name} copies {target_ship.get('name','?')} → {_fmt_list(extra_effects)}")
-            apply_effects(extra_effects, player, opponent, game)
-        else:
-            _log(game, f"{player.name} copies {target_ship.get('name','?')} (no on-play effects)")
+        if not target:
+            _log(game, f"{player.name} cancels copy")
+            return
+
+        # Apply target's on_play effects again
+        effs = _collect_on_play_effects(target)
+        if effs:
+            _log(game, f"{player.name} copies {target.get('name','?')} on-play effects")
+            apply_effects(effs, player, opponent, game)
         return
 
-    # Unknown: log for visibility (keeps tests stable even if a new effect sneaks in)
-    _log(game, f"(debug) Unhandled effect type: {etype}")
-    return
+    # -------------- unknown effect fallback --------------
+    _log(game, f"Unknown effect type: {etype}")

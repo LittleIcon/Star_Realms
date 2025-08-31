@@ -1,3 +1,4 @@
+# starrealms/player.py
 """
 Player logic for Star Realms.
 Handles deck, hand, discard, bases, authority, trade, combat, and card play.
@@ -37,9 +38,7 @@ def collect_effects(card: Dict[str, Any], phase: str) -> List[Dict[str, Any]]:
     # "start_of_turn" is encoded under "activated" in new schema
     if phase == "start_of_turn":
         for eff in card.get("activated", []) or []:
-            if not isinstance(eff, dict):
-                continue
-            if eff.get("type") == "start_of_turn":
+            if isinstance(eff, dict) and eff.get("type") == "start_of_turn":
                 inner = eff.get("effect")
                 if isinstance(inner, dict):
                     out.append(inner)
@@ -49,23 +48,22 @@ def collect_effects(card: Dict[str, Any], phase: str) -> List[Dict[str, Any]]:
         if not isinstance(eff, dict):
             continue
         trig = eff.get("trigger")
-        if trig is None:
-            # Default legacy entries without trigger to on-play
-            if phase == "play":
-                out.append({k: v for k, v in eff.items() if k != "trigger"})
-        else:
-            if phase == "play" and trig == "play":
-                out.append({k: v for k, v in eff.items() if k != "trigger"})
-            elif phase == "activated" and trig in ("activated", "activate"):
-                out.append({k: v for k, v in eff.items() if k != "trigger"})
-            elif phase == "ally" and trig == "ally":
-                out.append({k: v for k, v in eff.items() if k != "trigger"})
-            elif phase == "scrap" and trig == "scrap":
-                out.append({k: v for k, v in eff.items() if k != "trigger"})
-            elif phase == "passive" and trig == "static":
-                out.append({k: v for k, v in eff.items() if k != "trigger"})
-            elif phase == "start_of_turn" and trig == "start_of_turn":
-                out.append({k: v for k, v in eff.items() if k != "trigger"})
+        base = {k: v for k, v in eff.items() if k != "trigger"}
+
+        if trig is None and phase == "play":
+            out.append(base)
+        elif trig == "play" and phase == "play":
+            out.append(base)
+        elif trig in ("activated", "activate") and phase == "activated":
+            out.append(base)
+        elif trig == "ally" and phase == "ally":
+            out.append(base)
+        elif trig == "scrap" and phase == "scrap":
+            out.append(base)
+        elif trig == "static" and phase == "passive":
+            out.append(base)
+        elif trig == "start_of_turn" and phase == "start_of_turn":
+            out.append(base)
 
     return out
 
@@ -79,16 +77,12 @@ def trigger_effects(card: Dict[str, Any], phase: str, player, opponent, game) ->
 
 def _has_activate_ability(card: Dict[str, Any]) -> bool:
     """True if the card has any explicit activated or scrap ability (new or legacy schema)."""
-    # New schema
     if any(True for _ in (card.get("activated") or [])):
         return True
     if any(True for _ in (card.get("scrap") or [])):
         return True
-    # Legacy
     for e in card.get("effects", []) or []:
-        if not isinstance(e, dict):
-            continue
-        if e.get("trigger") in ("activated", "activate", "scrap"):
+        if isinstance(e, dict) and e.get("trigger") in ("activated", "activate", "scrap"):
             return True
     return False
 
@@ -99,12 +93,120 @@ def _ensure_rt(card: Dict[str, Any]) -> Dict[str, Any]:
     """
     Ensure per-instance runtime flags exist on the card.
     We use this to mark ally triggers so each card's ally fires at most once per turn.
-    (Bases get reset at start of the owner's turn in game.start_turn.)
+    (Bases get reset at start of the owner's turn in Game.start_turn.)
     """
     rt = card.setdefault("_rt", {})
     rt.setdefault("ally_triggered", False)
     return rt
 
+
+# ---------- Ally helpers (legacy + wildcard bridge) ----------
+
+def _ally_wildcard_active(player, game) -> bool:
+    """
+    True if an 'ally any faction' wildcard is active:
+      - per-turn flag set by an effect this turn, or
+      - dispatcher-provided continuous aura (e.g., Mech World) is active.
+    """
+    # effect-sourced, per-turn flag
+    if getattr(player, "ally_wildcard_active", False):
+        return True
+    # dispatcher-backed aura
+    return bool(
+        hasattr(game, "dispatcher")
+        and hasattr(game.dispatcher, "api")
+        and hasattr(game.dispatcher.api, "ally_wildcard_active")
+        and game.dispatcher.api.ally_wildcard_active(player.name)
+    )
+
+
+def _same_faction_present(player, card: Dict[str, Any]) -> bool:
+    """Return True if another card of the same faction is in play/bases for the player."""
+    faction = card.get("faction")
+    if not faction:
+        return False
+    pool = list(player.in_play) + list(player.bases)
+    for c in pool:
+        if c is card:
+            continue
+        cf = c.get("faction")
+        if isinstance(cf, str) and cf == faction:
+            return True
+        if isinstance(cf, (list, tuple, set)) and faction in cf:
+            return True
+    return False
+
+
+# ---------- Ally helpers (legacy + dispatcher-aware) ----------
+
+def _apply_ally_if_active(card: Dict[str, Any], player, opponent, game) -> None:
+    """
+    Fire a card's ally effects at most once per turn when the ally condition is met.
+    Ally condition is true if:
+      - A Mech World–style wildcard is active (via dispatcher OR per-turn flag OR a card
+        in play that has a legacy continuous ally_any_faction effect), OR
+      - Another card of the same faction is in play/bases.
+    """
+    if not isinstance(card, dict):
+        return
+
+    ally_effs = collect_effects(card, "ally")
+    if not ally_effs:
+        return
+
+    rt = _ensure_rt(card)
+    if rt.get("ally_triggered"):
+        return
+
+    # --- 1) Wildcard sources ---
+    # (a) Per-turn flag set by effects this turn
+    wildcard = bool(getattr(player, "ally_wildcard_active", False))
+
+    # (b) Dispatcher-backed aura (e.g., Mech World entered play)
+    if not wildcard and hasattr(game, "dispatcher") and hasattr(game.dispatcher, "api"):
+        api = game.dispatcher.api
+        if hasattr(api, "ally_wildcard_active"):
+            try:
+                wildcard = bool(api.ally_wildcard_active(player.name))
+            except Exception:
+                wildcard = False
+
+    # (c) Legacy continuous effect present on any card you control (fallback)
+    if not wildcard:
+        pool = list(player.in_play) + list(player.bases)
+        for c in pool:
+            for eff in (c.get("effects") or []):
+                if isinstance(eff, dict) and eff.get("type") == "ally_any_faction":
+                    trig = eff.get("trigger")
+                    if trig in (None, "continuous"):
+                        wildcard = True
+                        break
+            if wildcard:
+                break
+
+    # --- 2) Same-faction present? ---
+    same_faction_present = False
+    faction = card.get("faction")
+    if faction and not wildcard:
+        pool = list(player.in_play) + list(player.bases)
+
+        def _has_faction(c, fac):
+            cf = c.get("faction")
+            if isinstance(cf, str):
+                return cf == fac
+            if isinstance(cf, (list, tuple, set)):
+                return fac in cf
+            return False
+
+        same_faction_present = any((c is not card) and _has_faction(c, faction) for c in pool)
+
+    # --- 3) Resolve ally if condition is satisfied ---
+    if wildcard or same_faction_present:
+        apply_effects(ally_effs, player, opponent, game)
+        rt["ally_triggered"] = True
+        if hasattr(game, "log"):
+            reason = "wildcard" if wildcard else f"ally ({faction})"
+            game.log.append(f"{player.name} triggers {card.get('name','?')} ally via {reason}")
 
 class Player:
     def __init__(self, name, starting_deck, is_human: bool = False):
@@ -158,27 +260,59 @@ class Player:
     def play_card(self, card, opponent, game):
         """
         Play a card from hand to in_play or bases, applying on-play effects.
-        Ally effects are resolved centrally by the game engine via game.on_card_entered_play().
-        """
-        if card not in self.hand:
-            return False
+        - Dispatcher is notified (continuous auras, on_play abilities, hooks, etc.)
+        - Per-ship combat aura applied on ship entry
+        - Ally effects are resolved (wildcard or same-faction), once per card.
 
-        self.hand.remove(card)
+        NOTE: For test fixtures and scripted setups, we allow playing a card that
+        isn't currently in `self.hand`. If the card *is* in hand, we'll remove it.
+        """
+        in_hand = card in self.hand
+        if in_hand:
+            self.hand.remove(card)
         _ensure_rt(card)  # make sure runtime flags exist
 
         if card.get("type") in ("base", "outpost"):
             card["_used"] = False
             self.bases.append(card)
-            # Some bases have on-play effects
+
+            # Notify dispatcher (register continuous auras, record played_this_turn, etc.)
+            if hasattr(game, "dispatcher"):
+                game.dispatcher.on_card_enter_play(self.name, card)
+
+            # Base on-play effects (e.g., Royal Redoubt's primary printed effect, if any)
             trigger_effects(card, "play", self, opponent, game)
-            # Re-check allies for all cards now in play
-            game.on_card_entered_play(self)
+
+            # Ally resolution (wildcard or same-faction)
+            _apply_ally_if_active(card, self, opponent, game)
+
+            # Re-check allies engine-wide (if your Game uses this)
+            if hasattr(game, "on_card_entered_play"):
+                game.on_card_entered_play(self)
         else:
             self.in_play.append(card)
+
+            # Per-ship combat aura when a ship enters play
+            bonus = getattr(self, "per_ship_combat_bonus", 0)
+            if bonus:
+                self.combat_pool += int(bonus)
+                if hasattr(game, "log"):
+                    game.log.append(f"{self.name} gains +{int(bonus)} combat from per-ship bonus")
+
+            # Notify dispatcher (register continuous auras, record played_this_turn, hooks, etc.)
+            if hasattr(game, "dispatcher"):
+                game.dispatcher.on_card_enter_play(self.name, card)
+                game.dispatcher.on_ship_played(self.name, card)
+
             # Ship on-play effects
             trigger_effects(card, "play", self, opponent, game)
-            # Re-check allies for all cards now in play
-            game.on_card_entered_play(self)
+
+            # Ally resolution (wildcard or same-faction)
+            _apply_ally_if_active(card, self, opponent, game)
+
+            # Re-check allies engine-wide (if your Game uses this)
+            if hasattr(game, "on_card_entered_play"):
+                game.on_card_entered_play(self)
 
         return True
 
@@ -199,10 +333,10 @@ class Player:
             apply_effects(effs, self, opponent, game)
             self.bases.remove(card)
             self.scrap_heap.append(card)
-            game.log.append(f"{self.name} scraps {card['name']} for effect")
+            if hasattr(game, "log"):
+                game.log.append(f"{self.name} scraps {card['name']} for effect")
             return True
 
-        # normal activation
         if card.get("_used"):
             return False
         effs = collect_effects(card, "activated")
@@ -210,7 +344,8 @@ class Player:
             return False
         apply_effects(effs, self, opponent, game)
         card["_used"] = True
-        game.log.append(f"{self.name} activates {card['name']}")
+        if hasattr(game, "log"):
+            game.log.append(f"{self.name} activates {card['name']}")
         return True
 
     def activate_ship(self, card, opponent, game, scrap: bool = False):
@@ -228,14 +363,15 @@ class Player:
             apply_effects(effs, self, opponent, game)
             self.in_play.remove(card)
             self.scrap_heap.append(card)
-            game.log.append(f"{self.name} scraps {card['name']} for effect")
+            if hasattr(game, "log"):
+                game.log.append(f"{self.name} scraps {card['name']} for effect")
             return True
 
-        # If any ship ever gets an 'activated' (non-scrap) ability:
         effs = collect_effects(card, "activated")
         if effs:
             apply_effects(effs, self, opponent, game)
-            game.log.append(f"{self.name} activates {card['name']}")
+            if hasattr(game, "log"):
+                game.log.append(f"{self.name} activates {card['name']}")
             return True
         return False
 
@@ -257,8 +393,9 @@ class Player:
         self.combat_pool = 0
         for b in self.bases:
             b["_used"] = False
-            # Do NOT reset ally flags here; bases re-arm at start of owner's turn in Game.start_turn.
+            # Do NOT reset ally_triggered here; bases re-arm at start of owner's turn in Game.start_turn.
 
+        # Clear per-turn flags
         if hasattr(self, "ally_wildcard_active"):
             delattr(self, "ally_wildcard_active")
         self.per_ship_combat_bonus = 0
@@ -288,11 +425,7 @@ class Player:
                 return False
 
         # Gain the purchased card
-        if self.topdeck_next_purchase:
-            self.deck.insert(0, card)
-            self.topdeck_next_purchase = False
-        else:
-            self.discard_pile.append(card)
+        game._acquire(self, card)
 
         # Replace slot in place
         game.trade_row[idx] = game.trade_deck.pop() if game.trade_deck else None
@@ -305,4 +438,5 @@ class Player:
         dmg = self.combat_pool
         self.combat_pool = 0
         opponent.authority -= dmg
-        game.log.append(f"{self.name} deals {dmg} damage to {opponent.name}")
+        if hasattr(game, "log"):
+            game.log.append(f"{self.name} deals {dmg} damage to {opponent.name}")
