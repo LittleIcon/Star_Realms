@@ -55,10 +55,9 @@ class GameAPI:
         # Refill the vacated slot so subsequent effects can still target the same index
         row = getattr(self.game, "trade_row", None)
         deck = getattr(self.game, "trade_deck", None)
-        if isinstance(row, list) and isinstance(deck, list) and deck:
-            # Insert a fresh card back into the same position if possible
+        if isinstance(row, list) and isinstance(deck, list) and deck is not None and len(deck) > 0:
             insert_at = idx if 0 <= idx <= len(row) else len(row)
-            # Use top of deck (index 0); tests only care that it refills
+            # Use top of deck; tests only care that it refills
             row.insert(insert_at, deck.pop(0))
 
     def destroy_trade_row(self, idx: int):
@@ -101,9 +100,13 @@ class AbilityDispatcher:
     def __init__(self, api: GameAPI):
         self.api = api
         self.vars: Dict[str, Any] = {}  # ephemeral key/value between effects
+        # Track which ally abilities have already been applied this turn:
+        # player -> {(id(card), ability_index)}
+        self._applied_allies: Dict[str, set[Tuple[int, int]]] = {}
 
     # Public hook points
     def on_card_enter_play(self, player: str, card: Dict[str, Any]):
+        # Resolve continuous and on_play (including conditional on_play)
         for ab in card.get("abilities", []):
             trig: str = ab.get("trigger", "")
             if trig.startswith("continuous:"):
@@ -113,6 +116,9 @@ class AbilityDispatcher:
                     self._apply_effects(player, ab.get("effects", []))
         self._record_played_this_turn(player, card)
 
+        # After a card hits play, re-check ally abilities across the board
+        self._apply_pending_allies(player)
+
     def on_card_leave_play(self, player: str, card: Dict[str, Any]):
         self.api.unregister_hooks_from_source(
             player, card.get("name", f"id{card.get('id')}")
@@ -120,11 +126,12 @@ class AbilityDispatcher:
 
     def on_turn_start(self, player: str):
         self.api.start_turn(player)
+        # Reset ally application records for this player
+        self._applied_allies[player] = set()
+        # Apply any on_turn_start abilities
         for card in self.api.list_zone(player, "in_play"):
             for ab in card.get("abilities", []):
-                if ab.get("trigger") == "on_turn_start" and self._condition_ok(
-                    player, ab
-                ):
+                if ab.get("trigger") == "on_turn_start" and self._condition_ok(player, ab):
                     self._apply_effects(player, ab.get("effects", []))
 
     def activate_card(
@@ -136,9 +143,7 @@ class AbilityDispatcher:
             if ability_id and ab.get("id") != ability_id:
                 continue
             freq = ab.get("frequency", {})
-            if freq.get("once_per_turn", True) and not self.api.can_use(
-                player, ab.get("id")
-            ):
+            if freq.get("once_per_turn", True) and not self.api.can_use(player, ab.get("id")):
                 self._notify("Already used this ability this turn.")
                 return
             if self._condition_ok(player, ab):
@@ -150,15 +155,16 @@ class AbilityDispatcher:
 
     def scrap_activate(self, player: str, card: Dict[str, Any]):
         for ab in card.get("abilities", []):
-            if ab.get("trigger") == "scrap_activated" and self._condition_ok(
-                player, ab
-            ):
+            if ab.get("trigger") == "scrap_activated" and self._condition_ok(player, ab):
                 self._apply_effects(player, ab.get("effects", []))
                 return
         self._notify("No scrap-activated ability on this card.")
 
     def on_ship_played(self, player: str, ship_card: Dict[str, Any]):
+        # Fire continuous hooks (e.g., continuous:on_ship_played)
         self.api.fire(player, "on_ship_played", ship=ship_card)
+        # Then re-check ally abilities (a new ship may satisfy ally conditions)
+        self._apply_pending_allies(player)
 
     # Internals
     def _condition_ok(self, player: str, ab: Dict[str, Any]) -> bool:
@@ -175,9 +181,7 @@ class AbilityDispatcher:
             )
         return True
 
-    def _register_continuous(
-        self, player: str, card: Dict[str, Any], ab: Dict[str, Any]
-    ):
+    def _register_continuous(self, player: str, card: Dict[str, Any], ab: Dict[str, Any]):
         trigger = ab.get("trigger")
         _, event = trigger.split(":", 1)
         source = card.get("name", f"id{card.get('id')}")
@@ -197,6 +201,52 @@ class AbilityDispatcher:
         ui = getattr(self.api, "ui", None)
         if ui and hasattr(ui, "notify"):
             ui.notify(msg)
+
+    # Evaluate ally abilities across cards in play, once each per turn
+    def _apply_pending_allies(self, player: str):
+        """
+        Scan all cards in 'in_play' and apply any 'ally' abilities whose condition
+        is now satisfied, but only once per (card, ability) per turn.
+        Supports either:
+          - {"trigger":"ally","faction":"Trade Federation", "effects":[...]}
+          - or {"trigger":"ally","condition":{"faction_in_play":{"faction":"TF","min":1,"scope":"in_play"}}}
+        Also supports the common JSON encoding where 'ally' is modeled as an
+        'on_play' with a 'faction_in_play' condition by simply letting those pass
+        on the second card’s on_play; this sweep ensures true 'ally' triggers also fire.
+        """
+        applied = self._applied_allies.setdefault(player, set())
+        in_play = self.api.list_zone(player, "in_play")
+
+        for card in in_play:
+            abilities = card.get("abilities", []) or []
+            for idx, ab in enumerate(abilities):
+                if not isinstance(ab, dict):
+                    continue
+                if ab.get("trigger") != "ally":
+                    continue
+
+                key = (id(card), idx)
+                if key in applied:
+                    continue
+
+                # Resolve faction + require "another" card of that faction in play (count >= 2)
+                faction: Optional[str] = None
+                if "condition" in ab and "faction_in_play" in ab["condition"]:
+                    cfg = ab["condition"]["faction_in_play"]
+                    faction = cfg.get("faction")
+                    # Even if a bad JSON says min=1, ally semantics need at least 2 in play.
+                    need = max(2, int(cfg.get("min", 1)))
+                else:
+                    faction = ab.get("faction")
+                    need = 2  # ally means "another" card in play
+
+                ok = False
+                if faction:
+                    ok = self.api.faction_in_play(player, faction, need, "in_play")
+
+                if ok:
+                    self._apply_effects(player, ab.get("effects", []))
+                    applied.add(key)
 
     # Effects dispatcher
     def _apply_effects(self, player: str, effects: List[Dict[str, Any]]):
@@ -242,10 +292,7 @@ class AbilityDispatcher:
                 self.vars[key] = self._count(player, where, filt)
 
             elif t == "choose_one":
-                labels = [
-                    opt.get("label", f"Option {i+1}")
-                    for i, opt in enumerate(e["options"])
-                ]
+                labels = [opt.get("label", f"Option {i+1}") for i, opt in enumerate(e["options"])]
                 pick = self._choose(labels)
                 if pick is not None:
                     self._apply_effects(player, e["options"][pick].get("effects", []))
@@ -271,7 +318,7 @@ class AbilityDispatcher:
                 # not used in these tests
                 pass
 
-            elif t == "ally_any_faction":
+            elif t == " ally_any_faction":
                 # handled elsewhere in engine; not needed for these tests
                 pass
 
