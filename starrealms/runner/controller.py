@@ -1,8 +1,24 @@
 # starrealms/runner/controller.py
 
 from typing import Optional, Union
-from starrealms.ui import print_state, print_new_log, resolve_attack
-from starrealms.effects import apply_effects  # reserved for other effect handling
+
+# Try CLI helpers; fall back to no-ops so non-CLI UIs (pygame) work cleanly.
+try:
+    from starrealms.ui import print_state, print_new_log, resolve_attack
+except Exception:
+
+    def print_state(game):  # no-op
+        pass
+
+    def print_new_log(game, last_log_len: int) -> int:
+        return len(getattr(game, "log", []) or [])
+
+    def resolve_attack(p, o, game):
+        # Non-CLI UIs should implement their own targeting if needed.
+        pass
+
+
+from starrealms.effects import apply_effects
 
 
 def _list_bases_for_choice(bases):
@@ -26,7 +42,9 @@ def _spend_to_destroy_base(attacker, defender, base, game) -> bool:
         pass
     if hasattr(game, "scrap_heap"):
         game.scrap_heap.append(base)
-    game.log.append(f"{attacker.name} destroys {defender.name}'s {base['name']} by combat")
+    game.log.append(
+        f"{attacker.name} destroys {defender.name}'s {base['name']} by combat"
+    )
     return True
 
 
@@ -188,7 +206,9 @@ def apply_command(
                 # Fallback to interactive prompt.
                 resolve_info(game)
             else:
-                print("ℹ️  Info handler not found. Add resolve_info()/info_from_arg() to starrealms/ui.py")
+                print(
+                    "ℹ️  Info handler not found. Add resolve_info()/info_from_arg() to starrealms/ui.py"
+                )
         else:
             if echo:
                 print("ℹ️  Info ignored for AI.")
@@ -203,8 +223,13 @@ def apply_command(
 
     # -------- discards quick view --------
     if cmd == "d":
+
         def _idx_names(cards):
-            return ", ".join(f"{i}:{c['name']}" for i, c in enumerate(cards, start=1)) or "(empty)"
+            return (
+                ", ".join(f"{i}:{c['name']}" for i, c in enumerate(cards, start=1))
+                or "(empty)"
+            )
+
         print("\n🗂️  Discards")
         print(f"  {p.name}: [{_idx_names(p.discard_pile)}]")
         print(f"  {o.name}: [{_idx_names(o.discard_pile)}]\n")

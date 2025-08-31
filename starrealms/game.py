@@ -6,7 +6,11 @@ Handles players, trade row, turn order, and win conditions.
 
 import random
 from .cards import CARDS, build_trade_deck, EXPLORER_NAME
-from .player import Player, trigger_effects
+from .player import Player, trigger_effects, collect_effects
+from .effects import apply_effects
+
+# Unified ability runner (data-driven cards)
+from starrealms.engine.unified_dispatcher import GameAPI, AbilityDispatcher
 
 
 def _card_template(name: str):
@@ -36,16 +40,23 @@ class Game:
         self.players = []
         for name in player_names:
             starting_deck = _make_starting_deck()
-            is_human = (str(name).lower() in ("you", "player 1"))
+            is_human = str(name).lower() in ("you", "player 1")
             self.players.append(Player(name, starting_deck, is_human=is_human))
 
         # Turn pointers
-        self.turn = 0            # 0/1 index of current player
-        self.turn_number = 0     # visible counter, increments at start_turn
+        self.turn = 0  # 0/1 index of current player
+        self.turn_number = 0  # visible counter, increments at start_turn
 
         # Opening hands: P1 draws 3, P2 draws 5 (first-turn advantage mitigation)
         self.players[0].draw_cards(3)
         self.players[1].draw_cards(5)
+
+        # Ability dispatcher wiring
+        self.ui = getattr(self, "ui", None)
+        self.api = GameAPI(self, self.ui)
+        self.dispatcher = AbilityDispatcher(self.api)
+        # Track cards played this turn (ships + bases)
+        self._played_this_turn = {self.players[0].name: [], self.players[1].name: []}
 
     # --- helpers ---
     def current_player(self) -> Player:
@@ -75,61 +86,62 @@ class Game:
         """
         for player in self.players:
             if player.authority <= 0:
-                return self.opponent() if player is self.current_player() else self.current_player()
+                return (
+                    self.opponent()
+                    if player is self.current_player()
+                    else self.current_player()
+                )
         return None
 
-    # --- ally resolution (NEW) ---
+    # --- ally resolution ---
     @staticmethod
     def _faction_of(card):
         return card.get("faction")
 
     def resolve_allies(self, player: Player):
         """
-        Re-scan the player's ships and bases in play.
-        Trigger any Ally effects that have not yet fired but now qualify.
-        Only logs/triggers for cards that actually have ally effects.
+        Re-scan player's ships and bases in play.
+        Trigger ally effects that have not yet fired and meet their min_allies threshold.
+        Each card's ally can fire at most once per turn (flag reset for bases at start_turn).
         """
         p = player
-        # Opponent of p (not necessarily the current_player/opponent pair)
         o = self.players[0] if p is self.players[1] else self.players[1]
 
-        # Build the set we consider "in play" for ally checks
         in_play_all = list(getattr(p, "in_play", [])) + list(getattr(p, "bases", []))
 
-        def faction_count(f):
+        def same_faction_others_count(card):
+            f = card.get("faction")
             if not f:
                 return 0
-            return sum(1 for c in in_play_all if self._faction_of(c) == f)
-
-        # helper: does card actually have ally effects?
-        def _has_ally_effects(card):
-            if isinstance(card.get("ally"), list) and card["ally"]:
-                return True
-            if isinstance(card.get("ally_effects"), list) and card["ally_effects"]:
-                return True
-            for e in (card.get("effects") or []):
-                if isinstance(e, dict) and e.get("trigger") == "ally":
-                    return True
-            return False
+            cnt = 0
+            for c in in_play_all:
+                if c is card:
+                    continue
+                if c.get("faction") == f:
+                    cnt += 1
+            return cnt
 
         for card in in_play_all:
-            rt = card.setdefault('_rt', {})
-            if rt.get('ally_triggered'):
+            rt = card.setdefault("_rt", {})
+            if rt.get("ally_triggered"):
                 continue
 
-            f = self._faction_of(card)
-            if not f:
+            # Gather ally effects (supports both new/legacy schemas via collect_effects)
+            ally_effs = collect_effects(card, "ally")
+            if not ally_effs:
                 continue
 
-            # Only consider cards that actually have ally text
-            if not _has_ally_effects(card):
+            allies = same_faction_others_count(card)
+            # Only apply those effects that meet their threshold
+            to_apply = [e for e in ally_effs if int(e.get("min_allies", 1)) <= allies]
+            if not to_apply:
                 continue
 
-            # Star Realms ally condition: at least one *other* card of same faction
-            if faction_count(f) >= 2:
-                trigger_effects(card, "ally", p, o, self)
-                rt['ally_triggered'] = True
-                self.log.append(f"{p.name} — Ally triggered on {card.get('name', '?')}")
+            apply_effects(to_apply, p, o, self)
+            rt["ally_triggered"] = True
+            self.log.append(
+                f"{p.name} — Ally triggered on {card.get('name','?')} (allies={allies})"
+            )
 
     def on_card_entered_play(self, player: Player):
         """
@@ -153,11 +165,16 @@ class Game:
 
         # Reset ally flags for persistent bases so they can fire again this turn
         for b in p.bases:
-            b.setdefault('_rt', {})['ally_triggered'] = False
+            b.setdefault("_rt", {})["ally_triggered"] = False
 
         # Trigger 'start_of_turn' effects on the active player's bases
         for b in p.bases:
             trigger_effects(b, "start_of_turn", p, o, self)
+
+        # Unified on_turn_start abilities (data-driven schema)
+        self.dispatcher.on_turn_start(p.name)
+        # Reset played-this-turn tracking for the active player
+        self._played_this_turn[p.name].clear()
 
     def end_turn(self):
         """Clean up active player's board and pass turn to the opponent."""
@@ -166,7 +183,144 @@ class Game:
         self.refill_trade_row()
 
     # --- purchases ---
-    def buy_explorer(self, player: Player):
+    def _acquire(self, player: "Player", card: dict):
+        card_copy = card.copy()
+        if getattr(player, "topdeck_next_purchase", False):
+            player.deck.insert(0, card_copy)  # top of deck for pop(0)
+            player.topdeck_next_purchase = False
+            self.log.append(f"{player.name} gains {card_copy['name']} → top-deck")
+        else:
+            player.discard_pile.append(card_copy)
+            self.log.append(f"{player.name} gains {card_copy['name']} → discard")
+
+    def buy_explorer(self, player: "Player"):
         player.trade_pool -= 2
-        player.discard_pile.append(self.explorer_card.copy())
+        self._acquire(player, self.explorer_card)
         self.log.append(f"{player.name} buys Explorer")
+
+    # =========================
+    # Adapter methods used by the unified dispatcher/GameAPI
+    # =========================
+    def _player_by_name(self, name: str) -> Player:
+        for pl in self.players:
+            if pl.name == name:
+                return pl
+        # Fallback to current player if unknown
+        return self.current_player()
+
+    # --- Pools / economy ---
+    def add_trade(self, player_name: str, amount: int):
+        p = self._player_by_name(player_name)
+        p.trade_pool += amount
+        self.log.append(f"{p.name} gains {amount} trade")
+
+    def add_combat(self, player_name: str, amount: int):
+        p = self._player_by_name(player_name)
+        p.combat_pool += amount
+        self.log.append(f"{p.name} gains {amount} combat")
+
+    def add_authority(self, player_name: str, amount: int):
+        p = self._player_by_name(player_name)
+        p.authority += amount
+        self.log.append(
+            f"{p.name} {'gains' if amount>=0 else 'loses'} {abs(amount)} authority"
+        )
+
+    # --- Cards & zones ---
+    def draw(self, player_name: str, n: int = 1):
+        p = self._player_by_name(player_name)
+        p.draw_cards(n)
+
+    def force_discard(self, target: str, n: int = 1):
+        # 'target' may be "opponent" or a specific player name
+        p = self.opponent() if target == "opponent" else self._player_by_name(target)
+        p.force_discard(n)
+
+    def list_zone(self, player_name: str, zone: str):
+        p = self._player_by_name(player_name)
+        if zone == "hand":
+            return p.hand
+        if zone == "discard":
+            return p.discard_pile
+        if zone == "bases":
+            return getattr(p, "bases", [])
+        if zone == "in_play":
+            return list(getattr(p, "in_play", [])) + list(getattr(p, "bases", []))
+        if zone == "played_this_turn":
+            return self._played_this_turn[p.name]
+        if zone == "trade_row":
+            return [c for c in self.trade_row if c]
+        return []
+
+    def scrap_card(self, player_name: str, zone: str, index: int):
+        p = self._player_by_name(player_name)
+        if zone == "hand":
+            card = p.hand.pop(index)
+        elif zone == "discard":
+            card = p.discard_pile.pop(index)
+        elif zone == "in_play":
+            pool = getattr(p, "in_play", [])
+            card = pool.pop(index)
+        else:
+            return
+        self.scrap_heap.append(card)
+        self.log.append(f"{p.name} scraps {card.get('name','?')}")
+
+    # --- Market helpers ---
+    def trade_row_filtered(self, filt: dict):
+        def ok(c):
+            if not c:
+                return False
+            for k, v in (filt or {}).items():
+                if c.get(k) != v:
+                    return False
+            return True
+
+        return [i for i, c in enumerate(self.trade_row) if ok(c)]
+
+    def cost_of_trade_row(self, idx: int) -> int:
+        c = self.trade_row[idx]
+        return int(c.get("cost", 0)) if c else 0
+
+    def spend_trade(self, player_name: str, cost: int):
+        p = self._player_by_name(player_name)
+        if p.trade_pool < cost:
+            raise ValueError(f"Need {cost} trade; have {p.trade_pool}")
+        p.trade_pool -= cost
+
+    def acquire_from_trade_row(
+        self, player_name: str, idx: int, destination: str = "discard"
+    ):
+        p = self._player_by_name(player_name)
+        card = self.trade_row[idx]
+        self.trade_row[idx] = None
+        self.refill_trade_row()
+        if destination == "discard":
+            self._acquire(p, card)
+        else:
+            self._acquire_topdeck(p, card)
+
+    def destroy_trade_row(self, idx: int):
+        if self.trade_row[idx]:
+            self.scrap_heap.append(self.trade_row[idx])
+            self.trade_row[idx] = None
+            self.refill_trade_row()
+
+    # --- Bases / board ---
+    def destroy_enemy_base(self, owner: str, base_idx: int):
+        # owner will usually be "opponent" from abilities
+        p = self.opponent() if owner == "opponent" else self._player_by_name(owner)
+        if 0 <= base_idx < len(p.bases):
+            base = p.bases.pop(base_idx)
+            # tell dispatcher continuous effects are gone
+            self.dispatcher.on_card_leave_play(p.name, base)
+            self.scrap_heap.append(base)
+            self.log.append(f"{p.name}'s base {base.get('name','?')} destroyed")
+
+    def _acquire_topdeck(self, player: "Player", card: dict):
+        player.deck.insert(0, card.copy())
+        self.log.append(f"{player.name} gains {card['name']} → top-deck")
+
+    # --- Tracking for Blob World / ally (used by dispatcher) ---
+    def record_played_this_turn(self, player_name: str, card: dict):
+        self._played_this_turn[player_name].append(card)

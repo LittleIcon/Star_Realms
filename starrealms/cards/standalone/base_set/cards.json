@@ -205,10 +205,8 @@
     "cost": 6,
     "defense": 6,
     "outpost": true,
-    "on_play": [],
-    "activated": [
-      { "type": "combat", "amount": 3 }
-    ],
+    "on_play": [{ "type": "combat", "amount": 3 }],
+    "activated": [],
     "passive": [],
     "ally": [
       { "type": "opponent_discards", "amount": 1 }
@@ -478,7 +476,8 @@
     ],
     "activated": [],
     "passive": [],
-    "ally": [],
+    "ally": [{ "type": "combat", "amount": 2 }
+    ],
     "scrap": []
   },
   {
@@ -523,11 +522,11 @@
     "cost": 3,
     "defense": 5,
     "outpost": false,
-    "on_play": [],
+    "on_play": [{ "type": "combat", "amount": 1 }],
     "activated": [
       { "type": "start_of_turn", "effect": { "type": "combat", "amount": 1 } }
     ],
-    "passive": [],
+    "passive": [{ "type": "combat", "amount": 1 }],
     "ally": [],
     "scrap": [
       { "type": "trade", "amount": 3 }
@@ -651,7 +650,8 @@
     ],
     "activated": [],
     "passive": [],
-    "ally": [],
+    "ally": [{ "type": "combat", "amount": 2}
+    ],
     "scrap": []
   },
   {

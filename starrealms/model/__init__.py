@@ -1,0 +1,1 @@
+# Model: card/effect schemas

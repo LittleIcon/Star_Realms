@@ -39,6 +39,7 @@ DEFAULT_WEIGHTS: Dict[str, float] = {
     "cost_penalty": 0.05,
 }
 
+
 # ---------------- Weights IO ----------------
 def load_weights(path: str = WEIGHTS_PATH) -> Dict[str, float]:
     if os.path.exists(path):
@@ -49,10 +50,12 @@ def load_weights(path: str = WEIGHTS_PATH) -> Dict[str, float]:
         return w
     return DEFAULT_WEIGHTS.copy()
 
+
 def save_weights(weights: Dict[str, float], path: str = WEIGHTS_PATH) -> None:
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
         json.dump(weights, f, indent=2, sort_keys=True)
+
 
 # ---------------- Scoring helpers ----------------
 def _sum_effects_for(card: dict, key: str) -> float:
@@ -89,13 +92,23 @@ def _sum_effects_for(card: dict, key: str) -> float:
                     total += sum(opt_vals) / len(opt_vals)
     return total
 
+
 def score_card(card: dict, weights: Dict[str, float]) -> float:
     s = 0.0
     for k in (
-        "trade", "combat", "draw", "authority", "discard",
-        "scrap_hand_or_discard", "scrap_multiple", "destroy_base",
-        "destroy_target_trade_row", "ally_any_faction", "per_ship_combat",
-        "topdeck_next_purchase", "copy_target_ship"
+        "trade",
+        "combat",
+        "draw",
+        "authority",
+        "discard",
+        "scrap_hand_or_discard",
+        "scrap_multiple",
+        "destroy_base",
+        "destroy_target_trade_row",
+        "ally_any_faction",
+        "per_ship_combat",
+        "topdeck_next_purchase",
+        "copy_target_ship",
     ):
         s += _sum_effects_for(card, k) * weights.get(k, 0.0)
 
@@ -107,9 +120,11 @@ def score_card(card: dict, weights: Dict[str, float]) -> float:
     s -= (card.get("cost", 0) or 0) * weights.get("cost_penalty", 0.0)
     return s
 
+
 # ---------------- Simple policy agent (uses 'replan') ----------------
 class PolicyAgent:
     """Plans (cmd, arg) steps. Replans buys after 'pa' using a 'replan' marker."""
+
     def __init__(self, weights: Optional[Dict[str, float]] = None):
         self.weights = weights or load_weights()
 
@@ -130,9 +145,11 @@ class PolicyAgent:
         # UI must handle 'replan' by performing buys
         return [("pa", None), ("replan", None), ("a", None), ("e", None)]
 
+
 # ---------------- Stronger hard-coded AI (no 'replan') ----------------
 class GoodHeuristicAgent(PolicyAgent):
     """Deterministic AI that plays, buys (twice), attacks, ends — no 'replan' step."""
+
     def __init__(self):
         weights = {
             "trade": 1.2,
@@ -192,9 +209,9 @@ class GoodHeuristicAgent(PolicyAgent):
         for _ in range(2):
             slot = self._best_affordable_slot(game, p)
             if slot is not None:
-                cmds.append(("b", slot))   # 1-based index
+                cmds.append(("b", slot))  # 1-based index
             elif p.trade_pool >= 2:
-                cmds.append(("b", "x"))   # Explorer
+                cmds.append(("b", "x"))  # Explorer
             else:
                 break
 
@@ -204,6 +221,7 @@ class GoodHeuristicAgent(PolicyAgent):
         # 5) End
         cmds.append(("e", None))
         return cmds
+
 
 # ---------------- Drive AI via commands (optional helper) ----------------
 def ai_take_turn(game, apply_command) -> None:
@@ -234,18 +252,23 @@ def ai_take_turn(game, apply_command) -> None:
         apply_command(cmd, None if arg is None else str(arg))
         i += 1
 
+
 # ---------------- Optional trainer API ----------------
 def _mutate(weights: Dict[str, float], scale: float = 0.25) -> Dict[str, float]:
     nw = weights.copy()
     keys = list(nw.keys())
-    n = max(3, len(keys)//4)
+    n = max(3, len(keys) // 4)
     for k in random.sample(keys, n):
         jitter = random.uniform(-scale, scale)
         nw[k] = round(nw[k] + jitter, 4)
     return nw
 
-def self_play_match(make_game, wA: Dict[str,float], wB: Dict[str,float], max_turns=200) -> int:
+
+def self_play_match(
+    make_game, wA: Dict[str, float], wB: Dict[str, float], max_turns=200
+) -> int:
     from starrealms.game import Game  # avoid circulars if you import this elsewhere
+
     game = make_game()
     turns = 0
 
@@ -284,9 +307,11 @@ def self_play_match(make_game, wA: Dict[str,float], wB: Dict[str,float], max_tur
                 while buys < 2:
                     slot = agentA._best_affordable_slot(game, game.current_player())
                     if slot is not None:
-                        _apply("b", str(slot)); buys += 1
+                        _apply("b", str(slot))
+                        buys += 1
                     elif game.current_player().trade_pool >= 2:
-                        _apply("b", "x"); buys += 1
+                        _apply("b", "x")
+                        buys += 1
                     else:
                         break
             else:
@@ -301,9 +326,11 @@ def self_play_match(make_game, wA: Dict[str,float], wB: Dict[str,float], max_tur
                 while buys < 2:
                     slot = agentB._best_affordable_slot(game, game.current_player())
                     if slot is not None:
-                        _apply("b", str(slot)); buys += 1
+                        _apply("b", str(slot))
+                        buys += 1
                     elif game.current_player().trade_pool >= 2:
-                        _apply("b", "x"); buys += 1
+                        _apply("b", "x")
+                        buys += 1
                     else:
                         break
             else:
@@ -315,7 +342,10 @@ def self_play_match(make_game, wA: Dict[str,float], wB: Dict[str,float], max_tur
 
     return -1
 
-def train(make_game, iterations=20, matches_per_iter=20, log_fn=print) -> Dict[str, float]:
+
+def train(
+    make_game, iterations=20, matches_per_iter=20, log_fn=print
+) -> Dict[str, float]:
     best = load_weights()
     for it in range(1, iterations + 1):
         candidate = _mutate(best, scale=0.25)
@@ -323,12 +353,14 @@ def train(make_game, iterations=20, matches_per_iter=20, log_fn=print) -> Dict[s
         for _ in range(matches_per_iter):
             if random.random() < 0.5:
                 res = self_play_match(make_game, candidate, best)
-                wins += (1 if res == 1 else 0)
+                wins += 1 if res == 1 else 0
             else:
                 res = self_play_match(make_game, best, candidate)
-                wins += (1 if res == -1 else 0)
+                wins += 1 if res == -1 else 0
         score = wins / matches_per_iter
-        log_fn(f"[iter {it}] candidate vs best: {wins}/{matches_per_iter} = {score:.2f}")
+        log_fn(
+            f"[iter {it}] candidate vs best: {wins}/{matches_per_iter} = {score:.2f}"
+        )
         if score > 0.55:
             best = candidate
             save_weights(best)

@@ -1,0 +1,38 @@
+[run]
+source = starrealms
+omit =
+    # generated / UI / app entry
+    starrealms/main.py
+    starrealms/ui.py
+    starrealms/view/*
+    starrealms/runner/*
+    starrealms/ai.py
+    starrealms/ai_storage.py
+    starrealms/view/pygame_patch.py
+    starrealms/starters.py
+
+    # older/unused models
+    starrealms/model/*
+
+    # adapter scripts, old engine bits you aren’t testing yet
+    starrealms/engine/state.py
+    starrealms/engine/actions.py
+
+    # keep agents out of coverage (relative + absolute-safe globs)
+    starrealms/agent/*
+    */starrealms/agent/*
+
+    # omit the legacy adapter
+    starrealms/engine/card_adapter.py
+    */starrealms/engine/card_adapter.py
+
+[report]
+show_missing = true
+skip_covered = true
+
+# also honor the same omits at report time (helps if .coverage was created elsewhere)
+omit =
+    starrealms/agent/*
+    */starrealms/agent/*
+    starrealms/engine/card_adapter.py
+    */starrealms/engine/card_adapter.py

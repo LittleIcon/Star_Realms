@@ -16,11 +16,13 @@ _logger = logging.getLogger("starrealms.cards")
 
 # --- Minimal normalization & validation (no external deps) --------------------
 
+
 def _as_int(x, default=0) -> int:
     try:
         return int(x)
     except Exception:
         return default
+
 
 def _copy_effect_fields(e: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -40,11 +42,15 @@ def _copy_effect_fields(e: Dict[str, Any]) -> Dict[str, Any]:
             eff[k] = v
     return eff
 
-def _migrate_bucket(raw: Dict[str, Any], key: str, trigger: str, out_list: List[Dict[str, Any]]):
-    for e in (raw.get(key) or []):
+
+def _migrate_bucket(
+    raw: Dict[str, Any], key: str, trigger: str, out_list: List[Dict[str, Any]]
+):
+    for e in raw.get(key) or []:
         eff = _copy_effect_fields(e)
         eff["trigger"] = trigger
         out_list.append(eff)
+
 
 def _normalize_card(raw: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -68,20 +74,20 @@ def _normalize_card(raw: Dict[str, Any]) -> Dict[str, Any]:
     effects: List[Dict[str, Any]] = []
 
     # --- Legacy buckets -> unified effects (preserve amount/options/etc.)
-    _migrate_bucket(raw, "on_play",   "play",     effects)
-    _migrate_bucket(raw, "scrap",     "scrap",    effects)
+    _migrate_bucket(raw, "on_play", "play", effects)
+    _migrate_bucket(raw, "scrap", "scrap", effects)
     _migrate_bucket(raw, "activated", "activate", effects)
-    _migrate_bucket(raw, "passive",   "passive",  effects)
+    _migrate_bucket(raw, "passive", "passive", effects)
 
     # Ally: default faction to the card's faction if not provided
-    for e in (raw.get("ally") or []):
+    for e in raw.get("ally") or []:
         eff = _copy_effect_fields(e)
         eff["trigger"] = "ally"
         eff.setdefault("faction", faction)
         effects.append(eff)
 
     # --- Already-unified effects (keep trigger if present; default to 'play')
-    for e in (raw.get("effects") or []):
+    for e in raw.get("effects") or []:
         eff = _copy_effect_fields(e)
         eff["trigger"] = e.get("trigger", "play")
         effects.append(eff)
@@ -95,6 +101,7 @@ def _normalize_card(raw: Dict[str, Any]) -> Dict[str, Any]:
         "outpost": outpost,
         "effects": effects,
     }
+
 
 def _validate_card(c: Dict[str, Any]) -> None:
     if not c.get("name"):
@@ -118,6 +125,7 @@ def _validate_card(c: Dict[str, Any]) -> None:
 
 # --- Module loading & building ------------------------------------------------
 
+
 def _import_enabled_modules():
     errors = []
     mods = []
@@ -129,6 +137,7 @@ def _import_enabled_modules():
     if errors:
         raise RuntimeError("Card set import errors:\n- " + "\n- ".join(errors))
     return mods
+
 
 def _merge_cards_from_modules(mods) -> List[Dict[str, Any]]:
     merged: List[Dict[str, Any]] = []
@@ -145,6 +154,7 @@ def _merge_cards_from_modules(mods) -> List[Dict[str, Any]]:
                 raise RuntimeError(f"[{m.__name__}] CARDS[{i}] invalid: {e}") from e
     _assert_no_duplicate_names(merged)
     return merged
+
 
 def _assert_no_duplicate_names(cards: List[Dict[str, Any]]):
     seen = set()
@@ -168,6 +178,7 @@ def _load():
 
 # --- Trade deck building (duplicates allowed, must be consistent) ------------
 
+
 def _freeze(obj):
     """
     Recursively convert dicts/lists into hashable tuples for stable comparisons.
@@ -180,6 +191,7 @@ def _freeze(obj):
     if isinstance(obj, list):
         return tuple(_freeze(x) for x in obj)
     return obj
+
 
 def _fingerprint(c: Dict[str, Any]) -> Tuple:
     """Minimal fingerprint to ensure copies of the same-named card are consistent."""
@@ -200,6 +212,7 @@ def _fingerprint(c: Dict[str, Any]) -> Tuple:
             for e in c.get("effects", [])
         ),
     )
+
 
 def build_trade_deck() -> List[Dict[str, Any]]:
     """
@@ -229,7 +242,9 @@ def build_trade_deck() -> List[Dict[str, Any]]:
                     _validate_card(c)
                     deck.append(c)
                 except Exception as e:
-                    errors.append(f"[{m.__name__}] build_trade_deck()[{i}] invalid: {e}")
+                    errors.append(
+                        f"[{m.__name__}] build_trade_deck()[{i}] invalid: {e}"
+                    )
         except Exception as e:
             errors.append(f"[{m.__name__}] build_trade_deck() error: {e!r}")
 
@@ -250,8 +265,9 @@ def build_trade_deck() -> List[Dict[str, Any]]:
     if mismatches:
         uniq = ", ".join(sorted(set(mismatches)))
         raise RuntimeError(
-            "Inconsistent duplicate card definitions for: " + uniq +
-            " (cards with the same name have different fields/effects)"
+            "Inconsistent duplicate card definitions for: "
+            + uniq
+            + " (cards with the same name have different fields/effects)"
         )
 
     # DO NOT call _assert_no_duplicate_names(deck) here — duplicates are valid in the trade deck
@@ -272,3 +288,10 @@ def reload_enabled_sets(new_enabled: List[str] | None = None) -> int:
 
 # Load at import time
 _load()
+
+# Build quick indexes and expose EXPLORER for tests/engine convenience
+CARD_INDEX: Dict[str, Dict[str, Any]] = {c["name"]: c for c in CARDS}
+try:
+    EXPLORER = CARD_INDEX[EXPLORER_NAME]  # template (don’t mutate; copy before use)
+except KeyError:
+    EXPLORER = None  # if a set omits Explorer, tests can assert on this

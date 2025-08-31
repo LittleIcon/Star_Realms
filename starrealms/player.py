@@ -11,6 +11,7 @@ from .effects import apply_effects
 
 # ---------- Effect collection (NEW + legacy tolerant) ----------
 
+
 def collect_effects(card: Dict[str, Any], phase: str) -> List[Dict[str, Any]]:
     """
     Return a flat list of effect dicts for a given phase.
@@ -82,12 +83,17 @@ def _has_activate_ability(card: Dict[str, Any]) -> bool:
     if any(True for _ in (card.get("scrap") or [])):
         return True
     for e in card.get("effects", []) or []:
-        if isinstance(e, dict) and e.get("trigger") in ("activated", "activate", "scrap"):
+        if isinstance(e, dict) and e.get("trigger") in (
+            "activated",
+            "activate",
+            "scrap",
+        ):
             return True
     return False
 
 
 # ---------- Tiny runtime helper ----------
+
 
 def _ensure_rt(card: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -101,6 +107,7 @@ def _ensure_rt(card: Dict[str, Any]) -> Dict[str, Any]:
 
 
 # ---------- Ally helpers (legacy + wildcard bridge) ----------
+
 
 def _ally_wildcard_active(player, game) -> bool:
     """
@@ -139,6 +146,7 @@ def _same_faction_present(player, card: Dict[str, Any]) -> bool:
 
 # ---------- Ally helpers (legacy + dispatcher-aware) ----------
 
+
 def _apply_ally_if_active(card: Dict[str, Any], player, opponent, game) -> None:
     """
     Fire a card's ally effects at most once per turn when the ally condition is met.
@@ -175,7 +183,7 @@ def _apply_ally_if_active(card: Dict[str, Any], player, opponent, game) -> None:
     if not wildcard:
         pool = list(player.in_play) + list(player.bases)
         for c in pool:
-            for eff in (c.get("effects") or []):
+            for eff in c.get("effects") or []:
                 if isinstance(eff, dict) and eff.get("type") == "ally_any_faction":
                     trig = eff.get("trigger")
                     if trig in (None, "continuous"):
@@ -198,7 +206,9 @@ def _apply_ally_if_active(card: Dict[str, Any], player, opponent, game) -> None:
                 return fac in cf
             return False
 
-        same_faction_present = any((c is not card) and _has_faction(c, faction) for c in pool)
+        same_faction_present = any(
+            (c is not card) and _has_faction(c, faction) for c in pool
+        )
 
     # --- 3) Resolve ally if condition is satisfied ---
     if wildcard or same_faction_present:
@@ -206,7 +216,10 @@ def _apply_ally_if_active(card: Dict[str, Any], player, opponent, game) -> None:
         rt["ally_triggered"] = True
         if hasattr(game, "log"):
             reason = "wildcard" if wildcard else f"ally ({faction})"
-            game.log.append(f"{player.name} triggers {card.get('name','?')} ally via {reason}")
+            game.log.append(
+                f"{player.name} triggers {card.get('name','?')} ally via {reason}"
+            )
+
 
 class Player:
     def __init__(self, name, starting_deck, is_human: bool = False):
@@ -297,7 +310,9 @@ class Player:
             if bonus:
                 self.combat_pool += int(bonus)
                 if hasattr(game, "log"):
-                    game.log.append(f"{self.name} gains +{int(bonus)} combat from per-ship bonus")
+                    game.log.append(
+                        f"{self.name} gains +{int(bonus)} combat from per-ship bonus"
+                    )
 
             # Notify dispatcher (register continuous auras, record played_this_turn, hooks, etc.)
             if hasattr(game, "dispatcher"):
@@ -369,10 +384,20 @@ class Player:
 
         effs = collect_effects(card, "activated")
         if effs:
-            apply_effects(effs, self, opponent, game)
+            prev = getattr(self, "_activating_card", None)
+            self._activating_card = card
+            try:
+                apply_effects(effs, self, opponent, game)
+            finally:
+                if prev is None:
+                    delattr(self, "_activating_card")
+                else:
+                    self._activating_card = prev
+
             if hasattr(game, "log"):
                 game.log.append(f"{self.name} activates {card['name']}")
             return True
+
         return False
 
     def end_turn(self):

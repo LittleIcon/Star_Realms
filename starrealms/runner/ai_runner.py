@@ -2,6 +2,7 @@ from starrealms.ui import print_state, print_new_log
 from starrealms.runner.controller import apply_command
 from starrealms.ai import PolicyAgent
 
+
 def ai_turn(game, agent: PolicyAgent, last_log_len: int) -> int:
     game.start_turn()
     print_state(game)
@@ -26,13 +27,21 @@ def ai_turn(game, agent: PolicyAgent, last_log_len: int) -> int:
             p = game.current_player()
             buys = 0
             while buys < 2:
-                slot = agent._best_affordable_slot(game, p) if hasattr(agent, "_best_affordable_slot") else None
+                slot = (
+                    agent._best_affordable_slot(game, p)
+                    if hasattr(agent, "_best_affordable_slot")
+                    else None
+                )
                 if slot is not None:
-                    last_log_len = apply_command(game, "b", int(slot), last_log_len, echo=True)
+                    last_log_len = apply_command(
+                        game, "b", int(slot), last_log_len, echo=True
+                    )
                     buys += 1
                     continue
                 if p.trade_pool >= 2:
-                    last_log_len = apply_command(game, "b", "x", last_log_len, echo=True)
+                    last_log_len = apply_command(
+                        game, "b", "x", last_log_len, echo=True
+                    )
                     buys += 1
                     continue
                 break

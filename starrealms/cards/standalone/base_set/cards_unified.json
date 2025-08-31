@@ -1,0 +1,2153 @@
+[
+  {
+    "schema_version": 2,
+    "id": 1,
+    "name": "Scout",
+    "faction": "Neutral",
+    "type": "ship",
+    "cost": 0,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Scout_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "trade",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 2,
+    "name": "Viper",
+    "faction": "Neutral",
+    "type": "ship",
+    "cost": 0,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Viper_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 3,
+    "name": "Explorer",
+    "faction": "Neutral",
+    "type": "ship",
+    "cost": 2,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Explorer_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "trade",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "id": "Explorer_scrap",
+        "trigger": "scrap_activated",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 4,
+    "name": "Imperial Fighter",
+    "faction": "Star Empire",
+    "type": "ship",
+    "cost": 1,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Imperial Fighter_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "id": "Imperial Fighter_on_play_1",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "opponent_discards",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "id": "Imperial Fighter_ally_2",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Star Empire",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 5,
+    "name": "Imperial Frigate",
+    "faction": "Star Empire",
+    "type": "ship",
+    "cost": 3,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Imperial Frigate_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 4
+          }
+        ]
+      },
+      {
+        "id": "Imperial Frigate_on_play_1",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "opponent_discards",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "id": "Imperial Frigate_ally_2",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Star Empire",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "draw",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 6,
+    "name": "Survey Ship",
+    "faction": "Star Empire",
+    "type": "ship",
+    "cost": 3,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Survey Ship_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "trade",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "id": "Survey Ship_on_play_1",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "draw",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "id": "Survey Ship_scrap",
+        "trigger": "scrap_activated",
+        "effects": [
+          {
+            "type": "opponent_discards",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 7,
+    "name": "Corvette",
+    "faction": "Star Empire",
+    "type": "ship",
+    "cost": 2,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Corvette_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "id": "Corvette_on_play_1",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "draw",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "id": "Corvette_ally_2",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Star Empire",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 8,
+    "name": "Battlecruiser",
+    "faction": "Star Empire",
+    "type": "ship",
+    "cost": 6,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Battlecruiser_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 5
+          }
+        ]
+      },
+      {
+        "id": "Battlecruiser_on_play_1",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "draw",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "id": "Battlecruiser_ally_2",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Star Empire",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "opponent_discards",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "id": "Battlecruiser_scrap",
+        "trigger": "scrap_activated",
+        "effects": [
+          {
+            "type": "draw",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 9,
+    "name": "Dreadnaught",
+    "faction": "Star Empire",
+    "type": "ship",
+    "cost": 7,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Dreadnaught_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 7
+          }
+        ]
+      },
+      {
+        "id": "Dreadnaught_on_play_1",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "draw",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "id": "Dreadnaught_scrap",
+        "trigger": "scrap_activated",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 10,
+    "name": "Space Station",
+    "faction": "Star Empire",
+    "type": "base",
+    "cost": 4,
+    "defense": 4,
+    "outpost": true,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Space Station_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "id": "Space Station_ally_1",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Star Empire",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "id": "Space Station_scrap",
+        "trigger": "scrap_activated",
+        "effects": [
+          {
+            "type": "trade",
+            "amount": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 11,
+    "name": "Recycling Station",
+    "faction": "Star Empire",
+    "type": "base",
+    "cost": 4,
+    "defense": 4,
+    "outpost": true,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Recycling Station_activated_0",
+        "trigger": "activated",
+        "frequency": {
+          "once_per_turn": true
+        },
+        "effects": [
+          {
+            "type": "choose_one",
+            "options": [
+              {
+                "label": "Option 1",
+                "effects": [
+                  {
+                    "type": "discard_then_draw",
+                    "amount": 2
+                  }
+                ]
+              },
+              {
+                "label": "Option 2",
+                "effects": [
+                  {
+                    "type": "trade",
+                    "amount": 1
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 12,
+    "name": "War World",
+    "faction": "Star Empire",
+    "type": "base",
+    "cost": 5,
+    "defense": 4,
+    "outpost": true,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "War World_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 3
+          }
+        ]
+      },
+      {
+        "id": "War World_ally_1",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Star Empire",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 13,
+    "name": "Royal Redoubt",
+    "faction": "Star Empire",
+    "type": "base",
+    "cost": 6,
+    "defense": 6,
+    "outpost": true,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Royal Redoubt_activated_0",
+        "trigger": "activated",
+        "frequency": {
+          "once_per_turn": true
+        },
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 3
+          }
+        ]
+      },
+      {
+        "id": "Royal Redoubt_ally_1",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Star Empire",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "opponent_discards",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 14,
+    "name": "Fleet HQ",
+    "faction": "Star Empire",
+    "type": "base",
+    "cost": 8,
+    "defense": 8,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "trigger": "continuous:on_ship_played",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 1
+          }
+        ],
+        "id": "Fleet HQ_cont_ship_play"
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 15,
+    "name": "Federation Shuttle",
+    "faction": "Trade Federation",
+    "type": "ship",
+    "cost": 1,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Federation Shuttle_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "trade",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "id": "Federation Shuttle_ally_1",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Trade Federation",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "authority",
+            "amount": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 16,
+    "name": "Cutter",
+    "faction": "Trade Federation",
+    "type": "ship",
+    "cost": 2,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Cutter_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "trade",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "id": "Cutter_on_play_1",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "authority",
+            "amount": 4
+          }
+        ]
+      },
+      {
+        "id": "Cutter_ally_2",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Trade Federation",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 17,
+    "name": "Embassy Yacht",
+    "faction": "Trade Federation",
+    "type": "ship",
+    "cost": 3,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Embassy Yacht_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "authority",
+            "amount": 3
+          }
+        ]
+      },
+      {
+        "id": "Embassy Yacht_on_play_1",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "trade",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "trigger": "on_turn_start",
+        "effects": [
+          {
+            "type": "conditional",
+            "require_bases": 2,
+            "effect": {
+              "type": "draw",
+              "amount": 1
+            }
+          }
+        ],
+        "id": "Embassy Yacht_passive_as_turnstart"
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 18,
+    "name": "Freighter",
+    "faction": "Trade Federation",
+    "type": "ship",
+    "cost": 4,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Freighter_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "trade",
+            "amount": 4
+          }
+        ]
+      },
+      {
+        "id": "Freighter_activated_1",
+        "trigger": "activated",
+        "frequency": {
+          "once_per_turn": true
+        },
+        "effects": [
+          {
+            "type": "topdeck_next_purchase"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 19,
+    "name": "Trade Escort",
+    "faction": "Trade Federation",
+    "type": "ship",
+    "cost": 5,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Trade Escort_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "trade",
+            "amount": 3
+          }
+        ]
+      },
+      {
+        "id": "Trade Escort_on_play_1",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "authority",
+            "amount": 4
+          }
+        ]
+      },
+      {
+        "id": "Trade Escort_ally_2",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Trade Federation",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 20,
+    "name": "Flagship",
+    "faction": "Trade Federation",
+    "type": "ship",
+    "cost": 6,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Flagship_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 5
+          }
+        ]
+      },
+      {
+        "id": "Flagship_on_play_1",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "draw",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "id": "Flagship_ally_2",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Trade Federation",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "authority",
+            "amount": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 21,
+    "name": "Command Ship",
+    "faction": "Trade Federation",
+    "type": "ship",
+    "cost": 8,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Command Ship_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "authority",
+            "amount": 4
+          }
+        ]
+      },
+      {
+        "id": "Command Ship_on_play_1",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 5
+          }
+        ]
+      },
+      {
+        "id": "Command Ship_on_play_2",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "draw",
+            "amount": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 22,
+    "name": "Trading Post",
+    "faction": "Trade Federation",
+    "type": "base",
+    "cost": 3,
+    "defense": 4,
+    "outpost": true,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Trading Post_activated_0",
+        "trigger": "activated",
+        "frequency": {
+          "once_per_turn": true
+        },
+        "effects": [
+          {
+            "type": "choose_one",
+            "options": [
+              {
+                "label": "Option 1",
+                "effects": [
+                  {
+                    "type": "trade",
+                    "amount": 1
+                  }
+                ]
+              },
+              {
+                "label": "Option 2",
+                "effects": [
+                  {
+                    "type": "authority",
+                    "amount": 1
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Trading Post_scrap",
+        "trigger": "scrap_activated",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 23,
+    "name": "Barter World",
+    "faction": "Trade Federation",
+    "type": "base",
+    "cost": 4,
+    "defense": 4,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Barter World_activated_0",
+        "trigger": "activated",
+        "frequency": {
+          "once_per_turn": true
+        },
+        "effects": [
+          {
+            "type": "choose_one",
+            "options": [
+              {
+                "label": "Option 1",
+                "effects": [
+                  {
+                    "type": "trade",
+                    "amount": 2
+                  }
+                ]
+              },
+              {
+                "label": "Option 2",
+                "effects": [
+                  {
+                    "type": "authority",
+                    "amount": 2
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Barter World_scrap",
+        "trigger": "scrap_activated",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 24,
+    "name": "Defense Center",
+    "faction": "Trade Federation",
+    "type": "base",
+    "cost": 5,
+    "defense": 5,
+    "outpost": true,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Defense Center_activated_0",
+        "trigger": "activated",
+        "frequency": {
+          "once_per_turn": true
+        },
+        "effects": [
+          {
+            "type": "choose_one",
+            "options": [
+              {
+                "label": "Option 1",
+                "effects": [
+                  {
+                    "type": "combat",
+                    "amount": 2
+                  },
+                  {
+                    "type": "authority",
+                    "amount": 3
+                  }
+                ]
+              },
+              {
+                "label": "Option 2",
+                "effects": [
+                  {
+                    "type": "combat",
+                    "amount": 4
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 25,
+    "name": "Port of Call",
+    "faction": "Trade Federation",
+    "type": "base",
+    "cost": 6,
+    "defense": 6,
+    "outpost": true,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Port of Call_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "trade",
+            "amount": 3
+          }
+        ]
+      },
+      {
+        "id": "Port of Call_turnstart_1",
+        "trigger": "on_turn_start",
+        "effects": [
+          {
+            "type": "trade",
+            "amount": 3
+          }
+        ]
+      },
+      {
+        "id": "Port of Call_scrap",
+        "trigger": "scrap_activated",
+        "effects": [
+          {
+            "type": "draw",
+            "amount": 1
+          },
+          {
+            "type": "destroy_base"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 26,
+    "name": "Central Office",
+    "faction": "Trade Federation",
+    "type": "base",
+    "cost": 7,
+    "defense": 6,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Central Office_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "id": "Central Office_on_play_1",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "topdeck_next_purchase"
+          }
+        ]
+      },
+      {
+        "id": "Central Office_turnstart_2",
+        "trigger": "on_turn_start",
+        "effects": [
+          {
+            "type": "trade",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "id": "Central Office_ally_3",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Trade Federation",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "draw",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 27,
+    "name": "Blob Fighter",
+    "faction": "Blob",
+    "type": "ship",
+    "cost": 1,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Blob Fighter_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 3
+          }
+        ]
+      },
+      {
+        "id": "Blob Fighter_ally_1",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Blob",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "draw",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 28,
+    "name": "Battle Pod",
+    "faction": "Blob",
+    "type": "ship",
+    "cost": 2,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Battle Pod_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 4
+          }
+        ]
+      },
+      {
+        "id": "Battle Pod_on_play_1",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "destroy_target_trade_row"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 29,
+    "name": "Trade Pod",
+    "faction": "Blob",
+    "type": "ship",
+    "cost": 2,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Trade Pod_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "trade",
+            "amount": 3
+          }
+        ]
+      },
+      {
+        "id": "Trade Pod_ally_1",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Blob",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 30,
+    "name": "Ram",
+    "faction": "Blob",
+    "type": "ship",
+    "cost": 3,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Ram_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 5
+          }
+        ]
+      },
+      {
+        "id": "Ram_ally_1",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Blob",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "trade",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "id": "Ram_scrap",
+        "trigger": "scrap_activated",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 31,
+    "name": "Blob Wheel",
+    "faction": "Blob",
+    "type": "base",
+    "cost": 3,
+    "defense": 5,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Blob Wheel_turnstart_0",
+        "trigger": "on_turn_start",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "id": "Blob Wheel_scrap",
+        "trigger": "scrap_activated",
+        "effects": [
+          {
+            "type": "trade",
+            "amount": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 32,
+    "name": "Blob Destroyer",
+    "faction": "Blob",
+    "type": "ship",
+    "cost": 4,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Blob Destroyer_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 6
+          }
+        ]
+      },
+      {
+        "id": "Blob Destroyer_ally_1",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Blob",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "destroy_base"
+          }
+        ]
+      },
+      {
+        "id": "Blob Destroyer_ally_2",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Blob",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "destroy_target_trade_row"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 33,
+    "name": "The Hive",
+    "faction": "Blob",
+    "type": "base",
+    "cost": 5,
+    "defense": 5,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "The Hive_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 6
+          }
+        ]
+      },
+      {
+        "id": "The Hive_turnstart_1",
+        "trigger": "on_turn_start",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 3
+          }
+        ]
+      },
+      {
+        "id": "The Hive_ally_2",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Blob",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "draw",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 34,
+    "name": "Blob Carrier",
+    "faction": "Blob",
+    "type": "ship",
+    "cost": 6,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Blob Carrier_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 7
+          }
+        ]
+      },
+      {
+        "id": "Blob Carrier_ally_1",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Blob",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "topdeck_next_purchase"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 35,
+    "name": "Battle Blob",
+    "faction": "Blob",
+    "type": "ship",
+    "cost": 6,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Battle Blob_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 8
+          }
+        ]
+      },
+      {
+        "id": "Battle Blob_ally_1",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Blob",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "draw",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "id": "Battle Blob_scrap",
+        "trigger": "scrap_activated",
+        "effects": [
+          {
+            "type": "draw",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 36,
+    "name": "Mothership",
+    "faction": "Blob",
+    "type": "ship",
+    "cost": 7,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Mothership_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 6
+          }
+        ]
+      },
+      {
+        "id": "Mothership_on_play_1",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "draw",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "id": "Mothership_ally_2",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Blob",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "draw",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 37,
+    "name": "Blob World",
+    "faction": "Blob",
+    "type": "base",
+    "cost": 8,
+    "defense": 7,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Blob World_activated_0",
+        "trigger": "activated",
+        "frequency": {
+          "once_per_turn": true
+        },
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 5
+          }
+        ]
+      },
+      {
+        "id": "Blob World_ally_1",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Blob",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "draw",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 38,
+    "name": "Trade Bot",
+    "faction": "Machine Cult",
+    "type": "ship",
+    "cost": 1,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Trade Bot_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "trade",
+            "amount": 1
+          }
+        ]
+      },
+      {
+        "id": "Trade Bot_on_play_1",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "scrap_hand_or_discard"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 39,
+    "name": "Missile Bot",
+    "faction": "Machine Cult",
+    "type": "ship",
+    "cost": 2,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Missile Bot_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "id": "Missile Bot_on_play_1",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "scrap_hand_or_discard"
+          }
+        ]
+      },
+      {
+        "id": "Missile Bot_ally_2",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Machine Cult",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 40,
+    "name": "Supply Bot",
+    "faction": "Machine Cult",
+    "type": "ship",
+    "cost": 3,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Supply Bot_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "trade",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "id": "Supply Bot_on_play_1",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "scrap_hand_or_discard"
+          }
+        ]
+      },
+      {
+        "id": "Supply Bot_ally_2",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Machine Cult",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 41,
+    "name": "Patrol Mech",
+    "faction": "Machine Cult",
+    "type": "ship",
+    "cost": 4,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Patrol Mech_activated_0",
+        "trigger": "activated",
+        "frequency": {
+          "once_per_turn": true
+        },
+        "effects": [
+          {
+            "type": "choose_one",
+            "options": [
+              {
+                "label": "Option 1",
+                "effects": [
+                  {
+                    "type": "trade",
+                    "amount": 3
+                  }
+                ]
+              },
+              {
+                "label": "Option 2",
+                "effects": [
+                  {
+                    "type": "combat",
+                    "amount": 5
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Patrol Mech_ally_1",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Machine Cult",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "scrap_hand_or_discard"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 42,
+    "name": "Stealth Needle",
+    "faction": "Machine Cult",
+    "type": "ship",
+    "cost": 4,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Stealth Needle_activated_0",
+        "trigger": "activated",
+        "frequency": {
+          "once_per_turn": true
+        },
+        "effects": [
+          {
+            "type": "copy_target_ship"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 43,
+    "name": "Battle Mech",
+    "faction": "Machine Cult",
+    "type": "ship",
+    "cost": 5,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Battle Mech_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 4
+          }
+        ]
+      },
+      {
+        "id": "Battle Mech_on_play_1",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "scrap_hand_or_discard"
+          }
+        ]
+      },
+      {
+        "id": "Battle Mech_ally_2",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Machine Cult",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "draw",
+            "amount": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 44,
+    "name": "Missile Mech",
+    "faction": "Machine Cult",
+    "type": "ship",
+    "cost": 6,
+    "defense": null,
+    "outpost": false,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Missile Mech_on_play_0",
+        "trigger": "on_play",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 6
+          }
+        ]
+      },
+      {
+        "id": "Missile Mech_ally_1",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Machine Cult",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "destroy_base"
+          }
+        ]
+      },
+      {
+        "id": "Missile Mech_scrap",
+        "trigger": "scrap_activated",
+        "effects": [
+          {
+            "type": "draw",
+            "amount": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 45,
+    "name": "Battle Station",
+    "faction": "Machine Cult",
+    "type": "base",
+    "cost": 3,
+    "defense": 5,
+    "outpost": true,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Battle Station_scrap",
+        "trigger": "scrap_activated",
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 46,
+    "name": "Mech World",
+    "faction": "Machine Cult",
+    "type": "base",
+    "cost": 5,
+    "defense": 6,
+    "outpost": true,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "trigger": "continuous:modify_ally_checks",
+        "effects": [
+          {
+            "type": "ally_any_faction"
+          }
+        ],
+        "id": "Mech World_cont_ally_any"
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 47,
+    "name": "Junkyard",
+    "faction": "Machine Cult",
+    "type": "base",
+    "cost": 6,
+    "defense": 5,
+    "outpost": true,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Junkyard_activated_0",
+        "trigger": "activated",
+        "frequency": {
+          "once_per_turn": true
+        },
+        "effects": [
+          {
+            "type": "scrap_hand_or_discard"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 48,
+    "name": "Machine Base",
+    "faction": "Machine Cult",
+    "type": "base",
+    "cost": 7,
+    "defense": 6,
+    "outpost": true,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Machine Base_activated_0",
+        "trigger": "activated",
+        "frequency": {
+          "once_per_turn": true
+        },
+        "effects": [
+          {
+            "type": "combat",
+            "amount": 3
+          }
+        ]
+      },
+      {
+        "id": "Machine Base_ally_1",
+        "trigger": "on_play",
+        "condition": {
+          "faction_in_play": {
+            "faction": "Machine Cult",
+            "min": 1,
+            "scope": "this_turn"
+          }
+        },
+        "effects": [
+          {
+            "type": "scrap_hand_or_discard"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "schema_version": 2,
+    "id": 49,
+    "name": "Brain World",
+    "faction": "Machine Cult",
+    "type": "base",
+    "cost": 8,
+    "defense": 6,
+    "outpost": true,
+    "set": "base",
+    "rules_version": "base-1.0",
+    "abilities": [
+      {
+        "id": "Brain World_activated_0",
+        "trigger": "activated",
+        "frequency": {
+          "once_per_turn": true
+        },
+        "effects": [
+          {
+            "type": "scrap_multiple",
+            "amount": 2
+          }
+        ]
+      },
+      {
+        "id": "Brain World_activated_1",
+        "trigger": "activated",
+        "frequency": {
+          "once_per_turn": true
+        },
+        "effects": [
+          {
+            "type": "draw",
+            "amount": 2
+          }
+        ]
+      }
+    ]
+  }
+]
