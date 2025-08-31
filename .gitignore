@@ -9,3 +9,9 @@ venv/
 .coverage
 *.bak
 *.tmp
+.coverage
+*.bak
+*.tmp
+logs/
+__pycache__/
+*.pyc
