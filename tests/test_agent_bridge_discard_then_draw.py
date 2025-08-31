@@ -1,4 +1,4 @@
-# tests/test_agent_bridge_discard_then_draw.py
+# tests/test_agent_bridge_discard_then_draw,.py
 from starrealms.game import Game
 from starrealms.effects import apply_effect
 

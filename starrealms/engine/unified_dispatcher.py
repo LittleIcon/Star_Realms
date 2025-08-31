@@ -366,4 +366,4 @@ class AbilityDispatcher:
                     return False
             return True
 
-        return sum(1 for c in cards if ok(c))
+        return sum(1 for c in cards if ok(c)) 
