@@ -33,6 +33,11 @@ class Game:
         self.trade_row = [self.trade_deck.pop() for _ in range(5)]  # 5 fixed slots
         self.scrap_heap = []
 
+        # Provide a simple card database for tests/utilities that search
+        # across both deck and DB (e.g., get_card_by_name on trade_deck + card_db).
+        # Using templates from CARDS is sufficient for lookup.
+        self.card_db = list(CARDS)
+
         # Explorer template
         self.explorer_card = _card_template(EXPLORER_NAME)
 
@@ -289,16 +294,16 @@ class Game:
         p.trade_pool -= cost
 
     def acquire_from_trade_row(
-        self, player_name: str, idx: int, destination: str = "discard"
-    ):
-        p = self._player_by_name(player_name)
-        card = self.trade_row[idx]
-        self.trade_row[idx] = None
-        self.refill_trade_row()
-        if destination == "discard":
-            self._acquire(p, card)
-        else:
-            self._acquire_topdeck(p, card)
+            self, player_name: str, idx: int, destination: str = "discard"
+        ):
+            p = self._player_by_name(player_name)
+            card = self.trade_row[idx]
+            self.trade_row[idx] = None
+            self.refill_trade_row()
+            if destination == "discard":
+                self._acquire(p, card)
+            else:
+                self._acquire_topdeck(p, card)
 
     def destroy_trade_row(self, idx: int):
         if self.trade_row[idx]:
@@ -324,3 +329,18 @@ class Game:
     # --- Tracking for Blob World / ally (used by dispatcher) ---
     def record_played_this_turn(self, player_name: str, card: dict):
         self._played_this_turn[player_name].append(card)
+        
+    # --- test/utility proxy to the global effect runner ---
+    def apply_effects(self, effects, p1=None, p2=None, **kwargs):
+        """
+        Convenience wrapper so tests can do:
+            g.apply_effects(effects, p1, p2, choice_index=0)
+        Falls back to current player/opponent if p1/p2 not supplied.
+        Forwards any extra keyword args to the global effects.apply_effects.
+        """
+        if p1 is None:
+            p1 = self.current_player()
+        if p2 is None:
+            p2 = self.opponent()
+        # Forward to module-level runner
+        return apply_effects(effects, p1, p2, self, **kwargs)

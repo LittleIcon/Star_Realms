@@ -46,6 +46,12 @@ _INTERACTIVE_EFFECTS = {
     "topdeck_next_purchase",
 }
 
+def _log(game, msg: str) -> None:
+    try:
+        game.log.append(msg)  # type: ignore[attr-defined]
+    except Exception:
+        pass
+
 # ---------------- Utilities ----------------
 
 def _log(game, msg: str) -> None:
