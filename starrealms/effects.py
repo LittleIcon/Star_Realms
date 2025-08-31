@@ -188,7 +188,7 @@ def _count_cards_in_zone(player, zone: str, filt: dict | None) -> int:
 
 # ---------------- Core runners ----------------
 
-def apply_effects(effects, player, opponent, game):
+def apply_effects(effects, player, opponent, game, **kwargs):
     """
     Apply a sequence of effects.
     'effects' may be:
@@ -199,22 +199,22 @@ def apply_effects(effects, player, opponent, game):
     if not effects:
         return
     if isinstance(effects, dict):
-        apply_effect(effects, player, opponent, game)
+        apply_effect(effects, player, opponent, game, **kwargs)
         return
     if isinstance(effects, list):
         for eff in effects:
-            apply_effect(eff, player, opponent, game)
+            apply_effect(eff, player, opponent, game, **kwargs)
         return
     # anything else: ignore
 
-def apply_effect(effect, player, opponent, game):
+def apply_effect(effect, player, opponent, game, **kwargs):
     """
     Apply a single effect or a list of effects (recursively).
     """
     # If a list sneaks in, apply each item and return
     if isinstance(effect, list):
         for e in effect:
-            apply_effect(e, player, opponent, game)
+            apply_effect(e, player, opponent, game, **kwargs)
         return
 
     # Ignore non-dicts quietly
@@ -246,6 +246,53 @@ def apply_effect(effect, player, opponent, game):
         options = effect.get("options", [])
         if not options:
             return
+
+        # 1) Prefer explicit kwargs from caller (tests use choice_index)
+        idx = None
+        if "choice_index" in kwargs:
+            try:
+                idx = int(kwargs.get("choice_index"))
+            except Exception:
+                idx = None
+
+        # 2) Or pick by label (exact match) if provided
+        if idx is None and "choice_label" in kwargs:
+            lbl = kwargs.get("choice_label")
+            try:
+                idx = next(i for i,o in enumerate(options) if isinstance(o, dict) and o.get("label")==lbl)
+            except StopIteration:
+                idx = None
+
+        # 3) Agent hook (optional)
+        if idx is None:
+            ag = getattr(player, "agent", None)
+            if ag and hasattr(ag, "choose_index"):
+                try:
+                    idx = ag.choose_index(range(len(options)), prompt="Pick an option")
+                except Exception:
+                    idx = None
+
+        # 4) Fallback to first option
+        if not isinstance(idx, int) or not (0 <= idx < len(options)):
+            idx = 0
+
+        chosen = options[idx]
+        # pretty log
+        label = chosen.get("label") if isinstance(chosen, dict) else None
+        pretty = label or (", ".join(o.get("type","?") for o in (chosen if isinstance(chosen, list) else [chosen])) or "option")
+        _log(game, f"{player.name} chooses option {idx+1}" + (f": {pretty}" if pretty else ""))
+
+        # Execute chosen content
+        if isinstance(chosen, dict):
+            effs = chosen.get("effects")
+            if effs is not None:
+                apply_effects(effs, player, opponent, game, **kwargs)
+            else:
+                apply_effect(chosen, player, opponent, game, **kwargs)
+        elif isinstance(chosen, list):
+            for sub in chosen:
+                apply_effect(sub, player, opponent, game, **kwargs)
+        return
 
         chosen = options[0]  # default to first option
         chosen_pretty = _fmt_list(chosen if isinstance(chosen, list) else [chosen])
@@ -882,7 +929,6 @@ def apply_effect(effect, player, opponent, game):
         td = getattr(game, "trade_deck", [])
         row[idx] = td.pop() if td else None
         return
-
     # -------------- copy a ship already played this turn --------------
     if etype == "copy_target_ship":
         in_play = getattr(player, "in_play", [])
@@ -890,7 +936,7 @@ def apply_effect(effect, player, opponent, game):
             _log(game, f"{player.name} has no ships to copy")
             return
 
-        # do not allow copying the card that's doing the copying
+        # exclude the copier (last played)
         eligible = in_play[:-1] if len(in_play) > 1 else []
         if not eligible:
             _log(game, f"{player.name} has no eligible ship to copy")
@@ -913,26 +959,29 @@ def apply_effect(effect, player, opponent, game):
             if isinstance(pick, int) and 0 <= pick < len(eligible):
                 target = eligible[pick]
         else:
+            # non-human / no-agent → copy most recent eligible
             target = eligible[-1]
 
         if not target:
             _log(game, f"{player.name} cancels copy")
             return
 
-        # --- NEW: tag the activator with copied-from info and log it
+        # tag the activator if present
         activator = getattr(player, "_activating_card", None)
         if isinstance(activator, dict):
             activator["_copied_from"] = target
-            activator["_copied_from_name"] = target.get("name")
+            activator["_copied_from_name"] = target.get("name", "Unknown")
 
-            # Nice clean log line the test searches for
-            _log(game, f"Stealth Needle copies {target.get('name','?')}")
+        # log this regardless of activator presence
+        copier_name = (in_play[-1].get("name") if in_play and isinstance(in_play[-1], dict) else None) or "Stealth Needle"
+        _log(game, f"{copier_name} copies {target.get('name','?')}")
 
-        # Apply target's on_play effects again
+        # re-run the target's on_play effects
         effs = _collect_on_play_effects(target)
         if effs:
             apply_effects(effs, player, opponent, game)
         return
+
 
     # -------------- unknown effect fallback --------------
     _log(game, f"Unknown effect type: {etype}")

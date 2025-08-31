@@ -1,0 +1,63 @@
+{
+  "schema_version": 2,
+  "id": 24,
+  "name": "Defense Center",
+  "faction": "Trade Federation",
+  "type": "base",
+  "cost": 5,
+  "defense": 5,
+  "outpost": true,
+  "set": "base",
+  "rules_version": "base-1.0",
+  "abilities": [
+    {
+      "id": "Defense Center_activated_0",
+      "trigger": "activated",
+      "frequency": {
+        "once_per_turn": true
+      },
+      "effects": [
+        {
+          "type": "choose_one",
+          "options": [
+            {
+              "label": "Authority +3",
+              "effects": [
+                {
+                  "type": "authority",
+                  "amount": 3
+                }
+              ]
+            },
+            {
+              "label": "Combat +2",
+              "effects": [
+                {
+                  "type": "combat",
+                  "amount": 2
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "Defense Center_ally_1",
+      "trigger": "on_play",
+      "condition": {
+        "faction_in_play": {
+          "faction": "Trade Federation",
+          "min": 1,
+          "scope": "this_turn"
+        }
+      },
+      "effects": [
+        {
+          "type": "combat",
+          "amount": 2
+        }
+      ]
+    }
+  ]
+}
