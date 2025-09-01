@@ -82,12 +82,17 @@ def _has_activate_ability(card: Dict[str, Any]) -> bool:
     if any(True for _ in (card.get("scrap") or [])):
         return True
     for e in card.get("effects", []) or []:
-        if isinstance(e, dict) and e.get("trigger") in ("activated", "activate", "scrap"):
+        if isinstance(e, dict) and e.get("trigger") in (
+            "activated",
+            "activate",
+            "scrap",
+        ):
             return True
     return False
 
 
 # ---------- Tiny runtime helper ----------
+
 
 def _ensure_rt(card: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -101,6 +106,7 @@ def _ensure_rt(card: Dict[str, Any]) -> Dict[str, Any]:
 
 
 # ---------- Ally helpers (legacy + wildcard bridge) ----------
+
 
 def _ally_wildcard_active(player, game) -> bool:
     """
@@ -137,33 +143,82 @@ def _same_faction_present(player, card: Dict[str, Any]) -> bool:
     return False
 
 
+# ---------- Ally helpers (legacy + dispatcher-aware) ----------
+
+
 def _apply_ally_if_active(card: Dict[str, Any], player, opponent, game) -> None:
     """
-    Ally resolver that works with both schemas:
-      - Collects ally effects (new: card['ally'], legacy: effects[trigger=='ally'])
-      - Fires once per card per turn (uses card._rt['ally_triggered'])
-      - Ally condition is satisfied if:
-          * wildcard is active (_ally_wildcard_active), OR
-          * another same-faction card is present in play/bases.
+    Fire a card's ally effects at most once per turn when the ally condition is met.
+    Ally condition is true if:
+      - A Mech World–style wildcard is active (via dispatcher OR per-turn flag OR a card
+        in play that has a legacy continuous ally_any_faction effect), OR
+      - Another card of the same faction is in play/bases.
     """
     if not isinstance(card, dict):
+        return
+
+    ally_effs = collect_effects(card, "ally")
+    if not ally_effs:
         return
 
     rt = _ensure_rt(card)
     if rt.get("ally_triggered"):
         return
 
-    ally_effects = collect_effects(card, "ally")
-    if not ally_effects:
-        return
+    # --- 1) Wildcard sources ---
+    # (a) Per-turn flag set by effects this turn
+    wildcard = bool(getattr(player, "ally_wildcard_active", False))
 
-    if _ally_wildcard_active(player, game) or _same_faction_present(player, card):
-        apply_effects(ally_effects, player, opponent, game)
+    # (b) Dispatcher-backed aura (e.g., Mech World entered play)
+    if not wildcard and hasattr(game, "dispatcher") and hasattr(game.dispatcher, "api"):
+        api = game.dispatcher.api
+        if hasattr(api, "ally_wildcard_active"):
+            try:
+                wildcard = bool(api.ally_wildcard_active(player.name))
+            except Exception:
+                wildcard = False
+
+    # (c) Legacy continuous effect present on any card you control (fallback)
+    if not wildcard:
+        pool = list(player.in_play) + list(player.bases)
+        for c in pool:
+            for eff in c.get("effects") or []:
+                if isinstance(eff, dict) and eff.get("type") == "ally_any_faction":
+                    trig = eff.get("trigger")
+                    if trig in (None, "continuous"):
+                        wildcard = True
+                        break
+            if wildcard:
+                break
+
+    # --- 2) Same-faction present? ---
+    same_faction_present = False
+    faction = card.get("faction")
+    if faction and not wildcard:
+        pool = list(player.in_play) + list(player.bases)
+
+        def _has_faction(c, fac):
+            cf = c.get("faction")
+            if isinstance(cf, str):
+                return cf == fac
+            if isinstance(cf, (list, tuple, set)):
+                return fac in cf
+            return False
+
+        same_faction_present = any(
+            (c is not card) and _has_faction(c, faction) for c in pool
+        )
+
+    # --- 3) Resolve ally if condition is satisfied ---
+    if wildcard or same_faction_present:
+        # IMPORTANT ORDER: log the trigger BEFORE applying the effects
         rt["ally_triggered"] = True
         if hasattr(game, "log"):
-            src = card.get("name", "?")
-            reason = "wildcard" if _ally_wildcard_active(player, game) else f"ally ({card.get('faction','?')})"
-            game.log.append(f"{player.name} triggers {src} ally via {reason}")
+            reason = "wildcard" if wildcard else f"ally ({faction})"
+            game.log.append(
+                f"{player.name} triggers {card.get('name','?')} ally via {reason}"
+            )
+        apply_effects(ally_effs, player, opponent, game)
 
 
 class Player:
@@ -255,7 +310,9 @@ class Player:
             if bonus:
                 self.combat_pool += int(bonus)
                 if hasattr(game, "log"):
-                    game.log.append(f"{self.name} gains +{int(bonus)} combat from per-ship bonus")
+                    game.log.append(
+                        f"{self.name} gains +{int(bonus)} combat from per-ship bonus"
+                    )
 
             # Notify dispatcher (register continuous auras, record played_this_turn, hooks, etc.)
             if hasattr(game, "dispatcher"):
@@ -327,10 +384,20 @@ class Player:
 
         effs = collect_effects(card, "activated")
         if effs:
-            apply_effects(effs, self, opponent, game)
+            prev = getattr(self, "_activating_card", None)
+            self._activating_card = card
+            try:
+                apply_effects(effs, self, opponent, game)
+            finally:
+                if prev is None:
+                    delattr(self, "_activating_card")
+                else:
+                    self._activating_card = prev
+
             if hasattr(game, "log"):
                 game.log.append(f"{self.name} activates {card['name']}")
             return True
+
         return False
 
     def end_turn(self):

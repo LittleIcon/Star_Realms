@@ -295,3 +295,19 @@ try:
     EXPLORER = CARD_INDEX[EXPLORER_NAME]  # template (don’t mutate; copy before use)
 except KeyError:
     EXPLORER = None  # if a set omits Explorer, tests can assert on this
+
+# Lightweight lookup used by tests
+def get_card_by_name(cards, name, *, case_sensitive=True):
+    """
+    Find the first card dict in `cards` whose "name" matches `name`.
+    Returns the card dict, or None if not found.
+    Tests typically pass (g.trade_deck + g.card_db) as `cards`.
+    """
+    key = name if case_sensitive else name.lower()
+    for c in cards or []:
+        nm = c.get("name")
+        if not case_sensitive:
+            nm = (nm or "").lower()
+        if nm == key:
+            return c
+    return None

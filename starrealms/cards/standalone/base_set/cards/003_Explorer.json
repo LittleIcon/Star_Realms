@@ -1,34 +1,35 @@
 {
-  "schema_version": 2,
-  "id": 3,
   "name": "Explorer",
   "faction": "Neutral",
   "type": "ship",
   "cost": 2,
+
   "defense": null,
   "outpost": false,
   "set": "base",
   "rules_version": "base-1.0",
+
   "abilities": [
     {
       "id": "Explorer_on_play_0",
       "trigger": "on_play",
       "effects": [
-        {
-          "type": "trade",
-          "amount": 2
-        }
+        { "type": "trade", "amount": 2 }
       ]
     },
     {
       "id": "Explorer_scrap",
       "trigger": "scrap_activated",
       "effects": [
-        {
-          "type": "combat",
-          "amount": 2
-        }
+        { "type": "combat", "amount": 2 }
       ]
     }
-  ]
+  ],
+
+  // These empty sections keep backward-compat with any code that still reads them.
+  "on_play": [],
+  "activated": [],
+  "passive": [],
+  "ally": [],
+  "scrap": []
 }

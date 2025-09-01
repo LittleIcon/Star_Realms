@@ -11,7 +11,6 @@ from .effects import apply_effects
 
 # ---------- Effect collection (NEW + legacy tolerant) ----------
 
-
 def collect_effects(card: Dict[str, Any], phase: str) -> List[Dict[str, Any]]:
     """
     Return a flat list of effect dicts for a given phase.
@@ -212,13 +211,14 @@ def _apply_ally_if_active(card: Dict[str, Any], player, opponent, game) -> None:
 
     # --- 3) Resolve ally if condition is satisfied ---
     if wildcard or same_faction_present:
-        apply_effects(ally_effs, player, opponent, game)
+        # IMPORTANT ORDER: log the trigger BEFORE applying the effects
         rt["ally_triggered"] = True
         if hasattr(game, "log"):
             reason = "wildcard" if wildcard else f"ally ({faction})"
             game.log.append(
                 f"{player.name} triggers {card.get('name','?')} ally via {reason}"
             )
+        apply_effects(ally_effs, player, opponent, game)
 
 
 class Player:

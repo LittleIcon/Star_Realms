@@ -1,0 +1,52 @@
+--- a/starrealms/player.py
++++ b/starrealms/player.py
+@@
+-from .something import whatever   # your existing imports...
++from .effects_safe import run_effects_safe
++
++def _abilities(card):
++    return list(card.get("abilities", []) or [])
++
++def _scrap_effects(card):
++    eff = []
++    for ab in _abilities(card):
++        if ab.get("trigger") == "scrap_activated":
++            eff.extend(ab.get("effects", []) or [])
++    legacy = card.get("scrap")
++    if legacy:
++        if isinstance(legacy, dict):
++            eff.append(legacy)
++        elif isinstance(legacy, list):
++            eff.extend(legacy)
++    return eff
+@@ class Player:
+     # ... existing methods ...
++
++    def _move_to_scrap_heap(self, card, game):
++        heap = getattr(self, "scrap_heap", None) or getattr(game, "scrap_heap", None)
++        if heap is None:
++            self.scrap_heap = []
++            heap = self.scrap_heap
++        heap.append(card)
++
++    def activate_ship(self, card, opponent, game, scrap=False):
++        if not scrap:
++            return False
++        if card in getattr(self, "in_play", []):
++            in_play_zone = self.in_play
++        elif card in getattr(self, "bases", []):
++            in_play_zone = self.bases
++        else:
++            return False
++
++        effects = _scrap_effects(card)
++        if not effects:
++            return False
++
++        run_effects_safe(game, actor=self, opponent=opponent, effects=effects)
++        in_play_zone.remove(card)
++        self._move_to_scrap_heap(card, game)
++        return True
++
++    def activate_card(self, card, opponent, game, scrap=False):
++        return self.activate_ship(card, opponent, game, scrap=scrap)
