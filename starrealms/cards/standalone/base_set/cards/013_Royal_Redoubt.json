@@ -11,19 +11,6 @@
   "rules_version": "base-1.0",
   "abilities": [
     {
-      "id": "Royal Redoubt_activated_0",
-      "trigger": "activated",
-      "frequency": {
-        "once_per_turn": true
-      },
-      "effects": [
-        {
-          "type": "combat",
-          "amount": 3
-        }
-      ]
-    },
-    {
       "id": "Royal Redoubt_ally_1",
       "trigger": "on_play",
       "condition": {
