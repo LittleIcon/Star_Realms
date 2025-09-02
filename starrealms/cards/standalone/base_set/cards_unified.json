@@ -1976,32 +1976,20 @@
           {
             "type": "combat",
             "amount": 6
-          }
-        ]
-      },
-      {
-        "id": "Missile Mech_ally_1",
-        "trigger": "on_play",
-        "condition": {
-          "faction_in_play": {
-            "faction": "Machine Cult",
-            "min": 1,
-            "scope": "this_turn"
-          }
-        },
-        "effects": [
+          },
           {
             "type": "destroy_base"
           }
         ]
       },
       {
-        "id": "Missile Mech_scrap",
-        "trigger": "scrap_activated",
+        "id": "Missile Mech_ally_1",
+        "trigger": "ally",
+        "faction": "Machine Cult",
         "effects": [
           {
             "type": "draw",
-            "amount": 2
+            "amount": 1
           }
         ]
       }

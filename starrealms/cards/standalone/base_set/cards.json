@@ -6,7 +6,10 @@
     "type": "ship",
     "cost": 0,
     "on_play": [
-      { "type": "trade", "amount": 1 }
+      {
+        "type": "trade",
+        "amount": 1
+      }
     ],
     "activated": [],
     "passive": [],
@@ -20,7 +23,10 @@
     "type": "ship",
     "cost": 0,
     "on_play": [
-      { "type": "combat", "amount": 1 }
+      {
+        "type": "combat",
+        "amount": 1
+      }
     ],
     "activated": [],
     "passive": [],
@@ -34,13 +40,19 @@
     "type": "ship",
     "cost": 2,
     "on_play": [
-      { "type": "trade", "amount": 2 }
+      {
+        "type": "trade",
+        "amount": 2
+      }
     ],
     "activated": [],
     "passive": [],
     "ally": [],
     "scrap": [
-      { "type": "combat", "amount": 2 }
+      {
+        "type": "combat",
+        "amount": 2
+      }
     ]
   },
   {
@@ -50,12 +62,22 @@
     "type": "ship",
     "cost": 1,
     "on_play": [
-      { "type": "combat", "amount": 2 }, { "type": "opponent_discards", "amount": 1 }
+      {
+        "type": "combat",
+        "amount": 2
+      },
+      {
+        "type": "opponent_discards",
+        "amount": 1
+      }
     ],
     "activated": [],
     "passive": [],
     "ally": [
-    { "type": "combat", "amount": 2 }
+      {
+        "type": "combat",
+        "amount": 2
+      }
     ],
     "scrap": []
   },
@@ -66,13 +88,22 @@
     "type": "ship",
     "cost": 3,
     "on_play": [
-      { "type": "combat", "amount": 4 },
-      { "type": "opponent_discards", "amount": 1 }
+      {
+        "type": "combat",
+        "amount": 4
+      },
+      {
+        "type": "opponent_discards",
+        "amount": 1
+      }
     ],
     "activated": [],
     "passive": [],
     "ally": [
-      { "type": "draw", "amount": 1 }
+      {
+        "type": "draw",
+        "amount": 1
+      }
     ],
     "scrap": []
   },
@@ -83,13 +114,24 @@
     "type": "ship",
     "cost": 3,
     "on_play": [
-      { "type": "trade", "amount": 1 },
-      { "type": "draw", "amount": 1 }
+      {
+        "type": "trade",
+        "amount": 1
+      },
+      {
+        "type": "draw",
+        "amount": 1
+      }
     ],
     "activated": [],
     "passive": [],
     "ally": [],
-    "scrap": [{ "type": "opponent_discards", "amount": 1 }]
+    "scrap": [
+      {
+        "type": "opponent_discards",
+        "amount": 1
+      }
+    ]
   },
   {
     "id": 7,
@@ -98,12 +140,23 @@
     "type": "ship",
     "cost": 2,
     "on_play": [
-      { "type": "combat", "amount": 1 },
-      { "type": "draw", "amount": 1 }
+      {
+        "type": "combat",
+        "amount": 1
+      },
+      {
+        "type": "draw",
+        "amount": 1
+      }
     ],
     "activated": [],
     "passive": [],
-    "ally": [{ "type": "combat", "amount": 2 }],
+    "ally": [
+      {
+        "type": "combat",
+        "amount": 2
+      }
+    ],
     "scrap": []
   },
   {
@@ -113,16 +166,28 @@
     "type": "ship",
     "cost": 6,
     "on_play": [
-      { "type": "combat", "amount": 5 },
-      { "type": "draw", "amount": 1 }
+      {
+        "type": "combat",
+        "amount": 5
+      },
+      {
+        "type": "draw",
+        "amount": 1
+      }
     ],
     "activated": [],
     "passive": [],
     "ally": [
-      { "type": "opponent_discards", "amount": 1 }
+      {
+        "type": "opponent_discards",
+        "amount": 1
+      }
     ],
     "scrap": [
-      { "type": "draw", "amount": 1 }
+      {
+        "type": "draw",
+        "amount": 1
+      }
     ]
   },
   {
@@ -132,14 +197,23 @@
     "type": "ship",
     "cost": 7,
     "on_play": [
-      { "type": "combat", "amount": 7 },
-      { "type": "draw", "amount": 1 }
+      {
+        "type": "combat",
+        "amount": 7
+      },
+      {
+        "type": "draw",
+        "amount": 1
+      }
     ],
     "activated": [],
     "passive": [],
     "ally": [],
     "scrap": [
-      { "type": "combat", "amount": 5 }
+      {
+        "type": "combat",
+        "amount": 5
+      }
     ]
   },
   {
@@ -151,36 +225,58 @@
     "defense": 4,
     "outpost": true,
     "on_play": [
-      { "type": "combat", "amount": 2 }
+      {
+        "type": "combat",
+        "amount": 2
+      }
     ],
     "activated": [],
     "passive": [],
     "ally": [
-      { "type": "combat", "amount": 2 }
+      {
+        "type": "combat",
+        "amount": 2
+      }
     ],
     "scrap": [
-      { "type": "trade", "amount": 4 }
+      {
+        "type": "trade",
+        "amount": 4
+      }
     ]
   },
-{
-  "id": 11,
-  "name": "Recycling Station",
-  "faction": "Star Empire",
-  "type": "base",
-  "cost": 4,
-  "defense": 4,
-  "outpost": true,
-  "on_play": [],
-  "activated": [
-    { "type": "choose", "options": [
-      [ { "type": "discard_then_draw", "amount": 2 } ],
-      [ { "type": "trade", "amount": 1 } ]
-    ]}
-  ],
-  "passive": [],
-  "ally": [],
-  "scrap": []
-},
+  {
+    "id": 11,
+    "name": "Recycling Station",
+    "faction": "Star Empire",
+    "type": "base",
+    "cost": 4,
+    "defense": 4,
+    "outpost": true,
+    "on_play": [],
+    "activated": [
+      {
+        "type": "choose",
+        "options": [
+          [
+            {
+              "type": "discard_then_draw",
+              "amount": 2
+            }
+          ],
+          [
+            {
+              "type": "trade",
+              "amount": 1
+            }
+          ]
+        ]
+      }
+    ],
+    "passive": [],
+    "ally": [],
+    "scrap": []
+  },
   {
     "id": 12,
     "name": "War World",
@@ -189,11 +285,19 @@
     "cost": 5,
     "defense": 4,
     "outpost": true,
-    "on_play": [{ "type": "combat", "amount": 3 }],
+    "on_play": [
+      {
+        "type": "combat",
+        "amount": 3
+      }
+    ],
     "activated": [],
     "passive": [],
     "ally": [
-      { "type": "combat", "amount": 3 }
+      {
+        "type": "combat",
+        "amount": 3
+      }
     ],
     "scrap": []
   },
@@ -205,11 +309,19 @@
     "cost": 6,
     "defense": 6,
     "outpost": true,
-    "on_play": [{ "type": "combat", "amount": 3 }],
+    "on_play": [
+      {
+        "type": "combat",
+        "amount": 3
+      }
+    ],
     "activated": [],
     "passive": [],
     "ally": [
-      { "type": "opponent_discards", "amount": 1 }
+      {
+        "type": "opponent_discards",
+        "amount": 1
+      }
     ],
     "scrap": []
   },
@@ -224,7 +336,10 @@
     "on_play": [],
     "activated": [],
     "passive": [
-      { "type": "combat_per_ship", "amount": 1 }
+      {
+        "type": "combat_per_ship",
+        "amount": 1
+      }
     ],
     "ally": [],
     "scrap": []
@@ -236,12 +351,18 @@
     "type": "ship",
     "cost": 1,
     "on_play": [
-      { "type": "trade", "amount": 2 }
+      {
+        "type": "trade",
+        "amount": 2
+      }
     ],
     "activated": [],
     "passive": [],
     "ally": [
-      { "type": "authority", "amount": 4 }
+      {
+        "type": "authority",
+        "amount": 4
+      }
     ],
     "scrap": []
   },
@@ -252,13 +373,22 @@
     "type": "ship",
     "cost": 2,
     "on_play": [
-      { "type": "trade", "amount": 2 },
-      { "type": "authority", "amount": 4 }
+      {
+        "type": "trade",
+        "amount": 2
+      },
+      {
+        "type": "authority",
+        "amount": 4
+      }
     ],
     "activated": [],
     "passive": [],
     "ally": [
-      { "type": "combat", "amount": 4 }
+      {
+        "type": "combat",
+        "amount": 4
+      }
     ],
     "scrap": []
   },
@@ -269,12 +399,25 @@
     "type": "ship",
     "cost": 3,
     "on_play": [
-      { "type": "authority", "amount": 3 },
-      { "type": "trade", "amount": 2 }
+      {
+        "type": "authority",
+        "amount": 3
+      },
+      {
+        "type": "trade",
+        "amount": 2
+      }
     ],
     "activated": [],
     "passive": [
-      { "type": "conditional", "require_bases": 2, "effect": { "type": "draw", "amount": 1 } }
+      {
+        "type": "conditional",
+        "require_bases": 2,
+        "effect": {
+          "type": "draw",
+          "amount": 1
+        }
+      }
     ],
     "ally": [],
     "scrap": []
@@ -286,10 +429,15 @@
     "type": "ship",
     "cost": 4,
     "on_play": [
-      { "type": "trade", "amount": 4 }
+      {
+        "type": "trade",
+        "amount": 4
+      }
     ],
     "activated": [
-      { "type": "topdeck_next_purchase" }
+      {
+        "type": "topdeck_next_purchase"
+      }
     ],
     "passive": [],
     "ally": [],
@@ -302,13 +450,22 @@
     "type": "ship",
     "cost": 5,
     "on_play": [
-      { "type": "trade", "amount": 3 },
-      { "type": "authority", "amount": 4 }
+      {
+        "type": "trade",
+        "amount": 3
+      },
+      {
+        "type": "authority",
+        "amount": 4
+      }
     ],
     "activated": [],
     "passive": [],
     "ally": [
-      { "type": "combat", "amount": 4 }
+      {
+        "type": "combat",
+        "amount": 4
+      }
     ],
     "scrap": []
   },
@@ -319,13 +476,22 @@
     "type": "ship",
     "cost": 6,
     "on_play": [
-      { "type": "combat", "amount": 5 },
-      { "type": "draw", "amount": 1 }
+      {
+        "type": "combat",
+        "amount": 5
+      },
+      {
+        "type": "draw",
+        "amount": 1
+      }
     ],
     "activated": [],
     "passive": [],
     "ally": [
-      { "type": "authority", "amount": 5 }
+      {
+        "type": "authority",
+        "amount": 5
+      }
     ],
     "scrap": []
   },
@@ -336,9 +502,18 @@
     "type": "ship",
     "cost": 8,
     "on_play": [
-      { "type": "authority", "amount": 4 },
-      { "type": "combat", "amount": 5 },
-      { "type": "draw", "amount": 2 }
+      {
+        "type": "authority",
+        "amount": 4
+      },
+      {
+        "type": "combat",
+        "amount": 5
+      },
+      {
+        "type": "draw",
+        "amount": 2
+      }
     ],
     "activated": [],
     "passive": [],
@@ -355,15 +530,27 @@
     "outpost": true,
     "on_play": [],
     "activated": [
-      { "type": "choose", "options": [
-        { "type": "trade", "amount": 1 },
-        { "type": "authority", "amount": 1 }
-      ]}
+      {
+        "type": "choose",
+        "options": [
+          {
+            "type": "trade",
+            "amount": 1
+          },
+          {
+            "type": "authority",
+            "amount": 1
+          }
+        ]
+      }
     ],
     "passive": [],
     "ally": [],
     "scrap": [
-      { "type": "combat", "amount": 3 }
+      {
+        "type": "combat",
+        "amount": 3
+      }
     ]
   },
   {
@@ -376,15 +563,27 @@
     "outpost": false,
     "on_play": [],
     "activated": [
-      { "type": "choose", "options": [
-        { "type": "trade", "amount": 2 },
-        { "type": "authority", "amount": 2 }
-      ]}
+      {
+        "type": "choose",
+        "options": [
+          {
+            "type": "trade",
+            "amount": 2
+          },
+          {
+            "type": "authority",
+            "amount": 2
+          }
+        ]
+      }
     ],
     "passive": [],
     "ally": [],
     "scrap": [
-      { "type": "combat", "amount": 5 }
+      {
+        "type": "combat",
+        "amount": 5
+      }
     ]
   },
   {
@@ -397,10 +596,27 @@
     "outpost": true,
     "on_play": [],
     "activated": [
-      { "type": "choose", "options": [
-        [ { "type": "combat", "amount": 2 }, { "type": "authority", "amount": 3 } ],
-        [ { "type": "combat", "amount": 4 } ]
-      ]}
+      {
+        "type": "choose",
+        "options": [
+          [
+            {
+              "type": "combat",
+              "amount": 2
+            },
+            {
+              "type": "authority",
+              "amount": 3
+            }
+          ],
+          [
+            {
+              "type": "combat",
+              "amount": 4
+            }
+          ]
+        ]
+      }
     ],
     "passive": [],
     "ally": [],
@@ -415,16 +631,30 @@
     "defense": 6,
     "outpost": true,
     "on_play": [
-    { "type": "trade", "amount": 3 }
+      {
+        "type": "trade",
+        "amount": 3
+      }
     ],
     "activated": [
-      { "type": "start_of_turn", "effect": { "type": "trade", "amount": 3 } }
+      {
+        "type": "start_of_turn",
+        "effect": {
+          "type": "trade",
+          "amount": 3
+        }
+      }
     ],
     "passive": [],
     "ally": [],
     "scrap": [
-      { "type": "draw", "amount": 1 },
-      { "type": "destroy_base" }
+      {
+        "type": "draw",
+        "amount": 1
+      },
+      {
+        "type": "destroy_base"
+      }
     ]
   },
   {
@@ -436,15 +666,29 @@
     "defense": 6,
     "outpost": false,
     "on_play": [
-     { "type": "combat", "amount": 2 },
-     { "type": "topdeck_next_purchase" }
+      {
+        "type": "combat",
+        "amount": 2
+      },
+      {
+        "type": "topdeck_next_purchase"
+      }
     ],
     "activated": [
-      { "type": "start_of_turn", "effect": { "type": "trade", "amount": 2 } }
+      {
+        "type": "start_of_turn",
+        "effect": {
+          "type": "trade",
+          "amount": 2
+        }
+      }
     ],
     "passive": [],
     "ally": [
-      { "type": "draw", "amount": 1 }
+      {
+        "type": "draw",
+        "amount": 1
+      }
     ],
     "scrap": []
   },
@@ -455,12 +699,18 @@
     "type": "ship",
     "cost": 1,
     "on_play": [
-      { "type": "combat", "amount": 3 }
+      {
+        "type": "combat",
+        "amount": 3
+      }
     ],
     "activated": [],
     "passive": [],
     "ally": [
-      { "type": "draw", "amount": 1 }
+      {
+        "type": "draw",
+        "amount": 1
+      }
     ],
     "scrap": []
   },
@@ -471,12 +721,21 @@
     "type": "ship",
     "cost": 2,
     "on_play": [
-      { "type": "combat", "amount": 4 },
-      { "type": "destroy_target_trade_row" }
+      {
+        "type": "combat",
+        "amount": 4
+      },
+      {
+        "type": "destroy_target_trade_row"
+      }
     ],
     "activated": [],
     "passive": [],
-    "ally": [{ "type": "combat", "amount": 2 }
+    "ally": [
+      {
+        "type": "combat",
+        "amount": 2
+      }
     ],
     "scrap": []
   },
@@ -487,12 +746,18 @@
     "type": "ship",
     "cost": 2,
     "on_play": [
-      { "type": "trade", "amount": 3 }
+      {
+        "type": "trade",
+        "amount": 3
+      }
     ],
     "activated": [],
     "passive": [],
     "ally": [
-      { "type": "combat", "amount": 2 }
+      {
+        "type": "combat",
+        "amount": 2
+      }
     ],
     "scrap": []
   },
@@ -503,15 +768,24 @@
     "type": "ship",
     "cost": 3,
     "on_play": [
-      { "type": "combat", "amount": 5 }
+      {
+        "type": "combat",
+        "amount": 5
+      }
     ],
     "activated": [],
     "passive": [],
     "ally": [
-      { "type": "trade", "amount": 2 }
+      {
+        "type": "trade",
+        "amount": 2
+      }
     ],
     "scrap": [
-      { "type": "combat", "amount": 2 }
+      {
+        "type": "combat",
+        "amount": 2
+      }
     ]
   },
   {
@@ -522,14 +796,33 @@
     "cost": 3,
     "defense": 5,
     "outpost": false,
-    "on_play": [{ "type": "combat", "amount": 1 }],
-    "activated": [
-      { "type": "start_of_turn", "effect": { "type": "combat", "amount": 1 } }
+    "on_play": [
+      {
+        "type": "combat",
+        "amount": 1
+      }
     ],
-    "passive": [{ "type": "combat", "amount": 1 }],
+    "activated": [
+      {
+        "type": "start_of_turn",
+        "effect": {
+          "type": "combat",
+          "amount": 1
+        }
+      }
+    ],
+    "passive": [
+      {
+        "type": "combat",
+        "amount": 1
+      }
+    ],
     "ally": [],
     "scrap": [
-      { "type": "trade", "amount": 3 }
+      {
+        "type": "trade",
+        "amount": 3
+      }
     ]
   },
   {
@@ -539,13 +832,20 @@
     "type": "ship",
     "cost": 4,
     "on_play": [
-      { "type": "combat", "amount": 6 }
+      {
+        "type": "combat",
+        "amount": 6
+      }
     ],
     "activated": [],
     "passive": [],
     "ally": [
-      { "type": "destroy_base" },
-      { "type": "destroy_target_trade_row" }
+      {
+        "type": "destroy_base"
+      },
+      {
+        "type": "destroy_target_trade_row"
+      }
     ],
     "scrap": []
   },
@@ -558,14 +858,26 @@
     "defense": 5,
     "outpost": false,
     "on_play": [
-    { "type": "combat", "amount": 6 }
+      {
+        "type": "combat",
+        "amount": 6
+      }
     ],
     "activated": [
-      { "type": "start_of_turn", "effect": { "type": "combat", "amount": 3 } }
+      {
+        "type": "start_of_turn",
+        "effect": {
+          "type": "combat",
+          "amount": 3
+        }
+      }
     ],
     "passive": [],
     "ally": [
-      { "type": "draw", "amount": 1 }
+      {
+        "type": "draw",
+        "amount": 1
+      }
     ],
     "scrap": []
   },
@@ -576,12 +888,17 @@
     "type": "ship",
     "cost": 6,
     "on_play": [
-      { "type": "combat", "amount": 7 }
+      {
+        "type": "combat",
+        "amount": 7
+      }
     ],
     "activated": [],
     "passive": [],
     "ally": [
-      { "type": "topdeck_next_purchase" }
+      {
+        "type": "topdeck_next_purchase"
+      }
     ],
     "scrap": []
   },
@@ -592,15 +909,24 @@
     "type": "ship",
     "cost": 6,
     "on_play": [
-      { "type": "combat", "amount": 8 }
+      {
+        "type": "combat",
+        "amount": 8
+      }
     ],
     "activated": [],
     "passive": [],
     "ally": [
-      { "type": "draw", "amount": 1 }
+      {
+        "type": "draw",
+        "amount": 1
+      }
     ],
     "scrap": [
-      { "type": "draw", "amount": 1 }
+      {
+        "type": "draw",
+        "amount": 1
+      }
     ]
   },
   {
@@ -610,13 +936,22 @@
     "type": "ship",
     "cost": 7,
     "on_play": [
-      { "type": "combat", "amount": 6 },
-      { "type": "draw", "amount": 1 }
+      {
+        "type": "combat",
+        "amount": 6
+      },
+      {
+        "type": "draw",
+        "amount": 1
+      }
     ],
     "activated": [],
     "passive": [],
     "ally": [
-      { "type": "draw", "amount": 1 }
+      {
+        "type": "draw",
+        "amount": 1
+      }
     ],
     "scrap": []
   },
@@ -630,11 +965,17 @@
     "outpost": false,
     "on_play": [],
     "activated": [
-      { "type": "combat", "amount": 5 }
+      {
+        "type": "combat",
+        "amount": 5
+      }
     ],
     "passive": [],
     "ally": [
-      { "type": "draw", "amount": 1 }
+      {
+        "type": "draw",
+        "amount": 1
+      }
     ],
     "scrap": []
   },
@@ -645,12 +986,21 @@
     "type": "ship",
     "cost": 1,
     "on_play": [
-      { "type": "trade", "amount": 1 },
-      { "type": "scrap_hand_or_discard" }
+      {
+        "type": "trade",
+        "amount": 1
+      },
+      {
+        "type": "scrap_hand_or_discard"
+      }
     ],
     "activated": [],
     "passive": [],
-    "ally": [{ "type": "combat", "amount": 2}
+    "ally": [
+      {
+        "type": "combat",
+        "amount": 2
+      }
     ],
     "scrap": []
   },
@@ -661,12 +1011,22 @@
     "type": "ship",
     "cost": 2,
     "on_play": [
-      { "type": "combat", "amount": 2 },
-      { "type": "scrap_hand_or_discard" }
+      {
+        "type": "combat",
+        "amount": 2
+      },
+      {
+        "type": "scrap_hand_or_discard"
+      }
     ],
     "activated": [],
     "passive": [],
-    "ally": [{ "type": "combat", "amount": 2 }],
+    "ally": [
+      {
+        "type": "combat",
+        "amount": 2
+      }
+    ],
     "scrap": []
   },
   {
@@ -676,12 +1036,22 @@
     "type": "ship",
     "cost": 3,
     "on_play": [
-      { "type": "trade", "amount": 2 },
-      { "type": "scrap_hand_or_discard" }
+      {
+        "type": "trade",
+        "amount": 2
+      },
+      {
+        "type": "scrap_hand_or_discard"
+      }
     ],
     "activated": [],
     "passive": [],
-    "ally": [{ "type": "combat", "amount": 2 }],
+    "ally": [
+      {
+        "type": "combat",
+        "amount": 2
+      }
+    ],
     "scrap": []
   },
   {
@@ -690,17 +1060,27 @@
     "faction": "Machine Cult",
     "type": "ship",
     "cost": 4,
-    "on_play": [
-    ],
+    "on_play": [],
     "activated": [
-    { "type": "choose", "options": [
-        { "type": "trade", "amount": 3 },
-        { "type": "combat", "amount": 5 }
-      ]}
-      ],
+      {
+        "type": "choose",
+        "options": [
+          {
+            "type": "trade",
+            "amount": 3
+          },
+          {
+            "type": "combat",
+            "amount": 5
+          }
+        ]
+      }
+    ],
     "passive": [],
     "ally": [
-      { "type": "scrap_hand_or_discard" }
+      {
+        "type": "scrap_hand_or_discard"
+      }
     ],
     "scrap": []
   },
@@ -712,7 +1092,9 @@
     "cost": 4,
     "on_play": [],
     "activated": [
-      { "type": "copy_target_ship" }
+      {
+        "type": "copy_target_ship"
+      }
     ],
     "passive": [],
     "ally": [],
@@ -725,13 +1107,21 @@
     "type": "ship",
     "cost": 5,
     "on_play": [
-      { "type": "combat", "amount": 4 },
-      { "type": "scrap_hand_or_discard" }
+      {
+        "type": "combat",
+        "amount": 4
+      },
+      {
+        "type": "scrap_hand_or_discard"
+      }
     ],
     "activated": [],
     "passive": [],
     "ally": [
-      { "type": "draw", "amount": 1 }
+      {
+        "type": "draw",
+        "amount": 1
+      }
     ],
     "scrap": []
   },
@@ -742,15 +1132,22 @@
     "type": "ship",
     "cost": 6,
     "on_play": [
-      { "type": "combat", "amount": 6 }
+      {
+        "type": "combat",
+        "amount": 6
+      },
+      {
+        "type": "destroy_base"
+      }
     ],
     "activated": [],
     "passive": [],
     "ally": [
-      { "type": "destroy_base" }
-    ],
-    "scrap": [
-      { "type": "draw", "amount": 2 }
+      {
+        "type": "draw",
+        "amount": 1,
+        "faction": "Machine Cult"
+      }
     ]
   },
   {
@@ -765,7 +1162,12 @@
     "activated": [],
     "passive": [],
     "ally": [],
-    "scrap": [{ "type": "combat", "amount": 5 }]
+    "scrap": [
+      {
+        "type": "combat",
+        "amount": 5
+      }
+    ]
   },
   {
     "id": 46,
@@ -778,7 +1180,9 @@
     "on_play": [],
     "activated": [],
     "passive": [
-      { "type": "ally_any_faction" }
+      {
+        "type": "ally_any_faction"
+      }
     ],
     "ally": [],
     "scrap": []
@@ -793,7 +1197,9 @@
     "outpost": true,
     "on_play": [],
     "activated": [
-      { "type": "scrap_hand_or_discard" }
+      {
+        "type": "scrap_hand_or_discard"
+      }
     ],
     "passive": [],
     "ally": [],
@@ -809,11 +1215,16 @@
     "outpost": true,
     "on_play": [],
     "activated": [
-      { "type": "combat", "amount": 3 }
+      {
+        "type": "combat",
+        "amount": 3
+      }
     ],
     "passive": [],
     "ally": [
-      { "type": "scrap_hand_or_discard" }
+      {
+        "type": "scrap_hand_or_discard"
+      }
     ],
     "scrap": []
   },
@@ -827,8 +1238,14 @@
     "outpost": true,
     "on_play": [],
     "activated": [
-      { "type": "scrap_multiple", "amount": 2 },
-      { "type": "draw", "amount": 2 }
+      {
+        "type": "scrap_multiple",
+        "amount": 2
+      },
+      {
+        "type": "draw",
+        "amount": 2
+      }
     ],
     "passive": [],
     "ally": [],
