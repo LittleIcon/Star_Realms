@@ -96,15 +96,31 @@ def _discard_then_draw(game, player, opponent, spec):
 # --------- extras you’ll quickly benefit from ----------
 @register("opponent_discards")
 def _opponent_discards(game, player, opponent, spec):
-    n = int(spec.get("amount") or 1)
+    n = int((spec.get("amount") or 1))
     for _ in range(n):
-        if not opponent.hand:
+        if not getattr(opponent, "hand", []):
             break
-        card = opponent.hand.pop(0)
+        # Human path: prompt which card to discard
+        if getattr(opponent, "human", False):
+            try:
+                from starrealms.view import ui_common
+                names = [c.get("name","?") for c in opponent.hand]
+                # Show options and read 1-based index
+                ui_common.ui_print("Choose discard:", names)
+                ans = (ui_common.ui_input("Pick hand index (1-based): ") or "").strip()
+                idx = int(ans) - 1
+            except Exception:
+                idx = 0
+            if idx < 0 or idx >= len(opponent.hand):
+                idx = 0
+            card = opponent.hand.pop(idx)
+        else:
+            # AI path: previous behavior (discard first card)
+            card = opponent.hand.pop(0)
+
         opponent.discard_pile.append(card)
         if hasattr(game, "log"):
-            game.log.append(f"{opponent.name} discards {card['name']}")
-
+            game.log.append(f"{getattr(opponent,'name','Opponent')} discards {card.get('name','?')}")
 
 @register("scrap_hand_or_discard")
 def _scrap_one(game, player, opponent, spec):
