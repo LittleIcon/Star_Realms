@@ -10,18 +10,7 @@ def _give_lethal_combat(p, amount):
     p.combat_pool += amount
 
 def _spend_combat_to_face(g, attacker, defender, amount):
-    """
-    Call your actual attack-to-authority routine here.
-    If your project exposes a helper, use it. Common names:
-      - g.attack_authority(attacker, defender, amount)
-      - g._apply_combat_to_authority(attacker, defender, amount)
-      - g.engine.spend_combat(attacker, defender, amount)
-    Replace the line below with the correct one in your codebase.
-    """
-    # --- REPLACE THIS LINE WITH YOUR PROJECT’S CALL ---
-    defender.authority -= amount
-    # If you have a logging call in your engine, you can call it here too.
-
+    g.spend_combat_to_face(attacker, defender, amount)
 
 def test_game_ends_at_exact_zero():
     g = Game(("P1", "P2"))

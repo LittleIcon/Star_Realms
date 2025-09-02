@@ -87,9 +87,13 @@ def _ai_resolve_attack(p, o, game) -> None:
     if p.combat_pool > 0:
         o.authority -= p.combat_pool
         game.log.append(f"{p.name} deals {p.combat_pool} damage to {o.name}")
+        if hasattr(game, 'check_lethal'):
+            game.check_lethal()
         p.combat_pool = 0
 
 
+        if hasattr(game, "_check_lethal"):
+            game._check_lethal()
 def apply_command(
     game,
     cmd: str,

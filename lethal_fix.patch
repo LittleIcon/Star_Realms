@@ -1,0 +1,32 @@
+--- a/starrealms/game.py
++++ b/starrealms/game.py
+@@ class Game:
+-        self.log = []
++        self.log = []
++        # Lethal/endgame flags
++        self.over = False
++        self.is_over = False
++        self.winner = None
++
++    def _check_lethal(self):
++        """Mark the game as over if any player's authority is 0 or below."""
++        for p in self.players:
++            if p.authority <= 0:
++                self.over = True
++                self.is_over = True
++                # Winner is the opponent
++                self.winner = next(pl for pl in self.players if pl is not p)
++                self.log.append(f"{p.name} has been defeated! {self.winner.name} wins!")
++                return
+--- a/starrealms/runner/controller.py
++++ b/starrealms/runner/controller.py
+@@ def apply_command(game, p, o, cmd):
+-        o.authority -= p.combat_pool
+-        game.log.append(f"{p.name} deals {p.combat_pool} damage to {o.name}")
+-        p.combat_pool = 0
++        o.authority -= p.combat_pool
++        game.log.append(f"{p.name} deals {p.combat_pool} damage to {o.name}")
++        p.combat_pool = 0
++        # lethal check
++        if hasattr(game, "_check_lethal"):
++            game._check_lethal()

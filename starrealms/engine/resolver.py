@@ -58,6 +58,8 @@ def _combat(game, player, opponent, spec):
 def _authority(game, player, opponent, spec):
     amt = int(spec.get("amount") or 0)
     player.authority += amt
+    if hasattr(game, "check_lethal"):
+        game.check_lethal()
     if hasattr(game, "log"):
         game.log.append(
             f"{player.name} {'gains' if amt >= 0 else 'loses'} {abs(amt)} authority"

@@ -226,6 +226,19 @@ def _apply_ally_if_active(card: Dict[str, Any], player, opponent, game) -> None:
 
 
 class Player:
+    def __setattr__(self, name, value):
+        super_setattr = super().__setattr__
+        if name != "authority":
+            return super_setattr(name, value)
+        super_setattr(name, value)
+        try:
+            if isinstance(value, int) and value <= 0:
+                g = getattr(self, "game", None) or getattr(self, "_game", None)
+                if g is not None and hasattr(g, "_check_lethal"):
+                    g._check_lethal()
+        except Exception:
+            pass
+
     def __init__(self, name, starting_deck, is_human: bool = False):
         self.name = name
         self.human = bool(is_human)
