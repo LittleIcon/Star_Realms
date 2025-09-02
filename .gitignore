@@ -17,3 +17,11 @@ __pycache__/
 *.pyc
 .coverage
 .coverage
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
