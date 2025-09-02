@@ -344,3 +344,39 @@ class Game:
             p2 = self.opponent()
         # Forward to module-level runner
         return apply_effects(effects, p1, p2, self, **kwargs)
+    def _check_lethal(self):
+        """Mark game over if any player's authority <= 0.
+        Sets self.over/is_over and stores winner as a *name string*.
+        """
+        players = getattr(self, 'players', [])
+        for p in players:
+            if getattr(p, 'authority', 1) <= 0:
+                # flags
+                self.over = True
+                self.is_over = True
+                # winner as string
+                winner_obj = next(pl for pl in players if pl is not p)
+                self.winner = getattr(winner_obj, 'name', str(winner_obj))
+                # log
+                if hasattr(self, 'log'):
+                    self.log.append(
+                        f"{getattr(p, 'name', 'Opponent')} has been defeated! {self.winner} wins!"
+                    )
+                return
+    def spend_combat_to_face(self, attacker, defender, amount):
+        """Spend up to `amount` combat from `attacker` to damage `defender`'s authority,
+        then check for lethal. Clamps to available combat and non-negative spend.
+        """
+        spend = int(amount or 0)
+        if spend <= 0:
+            return
+        if spend > getattr(attacker, "combat_pool", 0):
+            spend = attacker.combat_pool
+        attacker.combat_pool -= spend
+        defender.authority -= spend
+        # lethal check
+        if hasattr(self, "_check_lethal"):
+            self._check_lethal()
+        # optional log
+        if hasattr(self, "log"):
+            self.log.append(f"{attacker.name} deals {spend} damage to {defender.name}")
