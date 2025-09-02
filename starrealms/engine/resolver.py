@@ -5,6 +5,7 @@ __all__ = [
 ]
 
 from typing import Callable, Dict, Any, List
+from ..view import ui_common
 
 LegacyGame = Any
 LegacyPlayer = Any
@@ -97,14 +98,35 @@ def _discard_then_draw(game, player, opponent, spec):
 @register("opponent_discards")
 def _opponent_discards(game, player, opponent, spec):
     n = int(spec.get("amount") or 1)
+
+    # Human opponent: prompt which card to discard (tests monkeypatch ui_input)
+    if getattr(opponent, "human", False):
+        for _ in range(n):
+            if not getattr(opponent, "hand", None):
+                break
+            names = [c.get("name", "?") for c in opponent.hand]
+            ui_common.ui_print("Choose a card to discard:", [f"{i+1}:{nm}" for i, nm in enumerate(names)])
+            ans = (ui_common.ui_input("Pick hand index (1-based): ") or "").strip()
+            try:
+                idx = int(ans) - 1
+            except Exception:
+                idx = 0
+            if idx < 0 or idx >= len(opponent.hand):
+                idx = 0
+            card = opponent.hand.pop(idx)
+            opponent.discard_pile.append(card)
+            if hasattr(game, "log"):
+                game.log.append(f"{opponent.name} discards {card['name']}")
+        return
+
+    # AI / non-human: discard from the front
     for _ in range(n):
-        if not opponent.hand:
+        if not getattr(opponent, "hand", None):
             break
         card = opponent.hand.pop(0)
         opponent.discard_pile.append(card)
         if hasattr(game, "log"):
             game.log.append(f"{opponent.name} discards {card['name']}")
-
 
 @register("scrap_hand_or_discard")
 def _scrap_one(game, player, opponent, spec):
