@@ -9,6 +9,10 @@ from typing import Any, Dict, List
 from .effects import apply_effects
 
 
+
+def _abilities(card):
+    return list(card.get("abilities", []) or [])
+
 # ---------- Effect collection (NEW + legacy tolerant) ----------
 
 def collect_effects(card: Dict[str, Any], phase: str) -> List[Dict[str, Any]]:
@@ -333,51 +337,28 @@ class Player:
 
     # ---------- Using bases & ships (manual activations / scrap) ----------
     def activate_base(self, card, opponent, game, scrap: bool = False):
-        """
-        Activate a base’s once-per-turn ability or scrap ability.
-        If scrap=True, fire scrap effects and remove base from play.
-        Otherwise, fire activated effects if not already used this turn.
-        """
-        if card not in self.bases:
-            return False
-
-        if scrap:
-            effs = collect_effects(card, "scrap")
-            if not effs:
-                return False
-            apply_effects(effs, self, opponent, game)
-            self.bases.remove(card)
-            self.scrap_heap.append(card)
-            if hasattr(game, "log"):
-                game.log.append(f"{self.name} scraps {card['name']} for effect")
-            return True
-
-        if card.get("_used"):
-            return False
-        effs = collect_effects(card, "activated")
-        if not effs:
-            return False
-        apply_effects(effs, self, opponent, game)
-        card["_used"] = True
-        if hasattr(game, "log"):
-            game.log.append(f"{self.name} activates {card['name']}")
-        return True
-
+        """Base activation delegates to scrap path by default."""
+        return self.activate_ship(card, opponent, game, scrap=True)
     def activate_ship(self, card, opponent, game, scrap: bool = False):
         """
         Use a ship’s activated or scrap ability while it’s in play.
         Example: Explorer scrap for +2 combat.
         """
-        if card not in self.in_play:
+        # accept ships in in_play and bases in self.bases when scrapping
+        zone = None
+        if card in getattr(self, 'in_play', []):
+            zone = self.in_play
+        elif card in getattr(self, 'bases', []):
+            zone = self.bases
+        else:
             return False
-
         if scrap:
             effs = collect_effects(card, "scrap")
             if not effs:
                 return False
             apply_effects(effs, self, opponent, game)
-            self.in_play.remove(card)
-            self.scrap_heap.append(card)
+            zone.remove(card)
+            self.scrap_heap.append(card) if hasattr(self, 'scrap_heap') else (setattr(self, 'scrap_heap', [card]))
             if hasattr(game, "log"):
                 game.log.append(f"{self.name} scraps {card['name']} for effect")
             return True
@@ -465,3 +446,34 @@ class Player:
         opponent.authority -= dmg
         if hasattr(game, "log"):
             game.log.append(f"{self.name} deals {dmg} damage to {opponent.name}")
+
+def _scrap_effects(card):
+    eff = []
+
+    # NEW unified abilities[] support
+    for ab in (card.get("abilities") or []):
+        if ab.get("trigger") in ("scrap_activated", "scrap"):
+            # Ability may contain its own nested effects[] or be a single effect-like object
+            inner = ab.get("effects")
+            if isinstance(inner, list):
+                eff.extend(inner)
+            elif isinstance(ab, dict) and "type" in ab:
+                eff.append(ab)
+
+    # LEGACY: card-level "scrap": can be list or single dict
+    legacy = card.get("scrap")
+    if legacy:
+        if isinstance(legacy, dict):
+            eff.append(legacy)
+        elif isinstance(legacy, list):
+            eff.extend(legacy)
+
+    # NEW (your Battle Station case): top-level effects[] items with trigger == scrap/scrap_activated
+    for e in (card.get("effects") or []):
+        if e and isinstance(e, dict) and e.get("trigger") in ("scrap", "scrap_activated"):
+            if "type" in e:
+                eff.append(e)
+            elif isinstance(e.get("effects"), list):
+                eff.extend(e["effects"])
+
+    return eff

@@ -3,6 +3,17 @@
 Presentation & user-interaction helpers for Star Realms.
 Keeps all printing, formatting, and prompts out of game logic.
 
+
+def _abilities(card):
+    return list(card.get("abilities", []) or [])
+
+def _has_scrap(card):
+    # NEW schema
+    if any(ab.get("trigger") == "scrap_activated" for ab in _abilities(card)):
+        return True
+    # Legacy
+    return bool(card.get("scrap"))
+
 This module provides:
 - print_state(game): pretty board renderer
 - print_new_log(game, last_len): incremental log printing
@@ -594,237 +605,40 @@ def resolve_attack(p, o, g) -> None:
 
 
 def use_action(p, o, g) -> None:
-    """
-    Let the human activate a base, or scrap a ship in play (e.g., Explorer).
-    - Bases: looks at `effects`, `choice`, `choices`, and `activated`.
-    - Ships: only 'scrap' if the card defines a 'scrap' section.
-    """
-    items: List[Dict] = (
-        []
-    )  # list of tuples: ("base"|"ship", card) but we store as dict with _kind
+    """List scrappable bases/ships (legacy + new schema), confirm, and scrap."""
+    scrappable = []
+    for c in getattr(p, "in_play", []):
+        if c.get("type") == "ship" and _has_scrap(c):
+            scrappable.append(c)
+    for c in getattr(p, "bases", []):
+        if c.get("type") == "base" and _has_scrap(c):
+            scrappable.append(c)
 
-    # Bases first
-    for b in p.bases:
-        items.append({"_kind": "base", "_card": b})
-    # Then ships with scrap actions
-    for s in p.in_play:
-        if s.get("scrap"):
-            items.append({"_kind": "ship", "_card": s})
-
-    if not items:
-        print("You have no bases to use and no ships with a scrap ability.")
+    if not scrappable:
+        from starrealms.view import ui_common
+        ui_common.ui_print("You have no bases to use and no ships with a scrap ability.")
         return
 
-    # Render menu
-    print("Activatables:")
-    for i, entry in enumerate(items, start=1):
-        kind = entry["_kind"]
-        c = entry["_card"]
-        if kind == "base":
-            used = " (used)" if c.get("_used") else ""
-            print(f"  {i}: Base — {c['name']}{used}")
-        else:
-            print(f"  {i}: Ship — {c['name']} (can scrap)")
+    from starrealms.view import ui_common
+    ui_common.ui_print("Scrappable cards:")
+    for i, c in enumerate(scrappable, 1):
+        ui_common.ui_print(f"  {i}) {c.get('name','?')} ({c.get('type','?')})")
 
-    sel = ui_input("Pick an entry (1-based), or 'x' to cancel: ").strip().lower()
-    if sel in ("x", "cancel", ""):
+    sel = ui_common.ui_input("Pick a card to scrap (number) or 'x' to cancel: ").strip().lower()
+    if sel in ("x", ""):
         return
-
     try:
         idx = int(sel) - 1
-        if idx < 0 or idx >= len(items):
-            print("Invalid selection.")
-            return
-    except ValueError:
-        print("Invalid selection.")
+        card = scrappable[idx]
+    except Exception:
+        ui_common.ui_print("Invalid selection.")
         return
 
-    kind = items[idx]["_kind"]
-    card = items[idx]["_card"]
-
-    # ---------- BASE handling ----------
-    if kind == "base":
-        if card.get("_used"):
-            print("That base has already been used this turn.")
-            return
-
-        # Lazy import to avoid circulars
-        from starrealms.effects import apply_effects
-
-        STATIC_TYPES = {"ally_any_faction", "per_ship_combat"}
-        options = []
-        labels = []
-
-        # Legacy choice/choices
-        if "choice" in card and isinstance(card["choice"], list) and card["choice"]:
-            options.append(("choice_list", card["choice"]))
-            labels.append("Use base: choose one of its options")
-        if "choices" in card and isinstance(card["choices"], list) and card["choices"]:
-            options.append(("choice_list", card["choices"]))
-            labels.append("Use base: choose one of its options")
-
-        # 'choose' inside effects
-        choose_blocks = [
-            e
-            for e in card.get("effects", [])
-            if isinstance(e, dict) and e.get("type") == "choose"
-        ]
-        if choose_blocks:
-            options.append(("choose_block", choose_blocks[0]))
-            labels.append("Use base: choose one of its options")
-
-        # Non-static effects (exclude passives and 'choose' container)
-        non_static_effects = [
-            e
-            for e in card.get("effects", [])
-            if isinstance(e, dict)
-            and e.get("type") not in STATIC_TYPES
-            and e.get("type") != "choose"
-        ]
-        if non_static_effects:
-            options.append(("effects", non_static_effects))
-            labels.append("Use base: activate its effect")
-
-        # Handle "activated"
-        if "activated" in card and card["activated"]:
-            act = card["activated"]
-            if isinstance(act, dict) and act.get("type") == "choice":
-                options.append(("choose_block", act))
-                labels.append("Use base: choose one of its activated options")
-            elif isinstance(act, list):
-                for e in act:
-                    if isinstance(e, dict) and e.get("type") == "choose":
-                        options.append(("choose_block", e))
-                        labels.append("Use base: choose one of its activated options")
-                    else:
-                        options.append(("effects", [e]))
-                        labels.append("Use base: activated effect")
-
-        # Scrap option
-        if card.get("scrap"):
-            options.append(("scrap", card["scrap"]))
-            labels.append("Scrap this base for its scrap effect")
-
-        if not options:
-            print("This base has no activatable effect.")
-            return
-
-        # Present base options
-        print("Available actions:")
-        for i, lbl in enumerate(labels, start=1):
-            print(f"{i}: {lbl}")
-        raw = ui_input("Pick an action (1-based, or 'x' to cancel): ").strip().lower()
-        if raw in ("x", "cancel", ""):
-            return
-        try:
-            opt_idx = int(raw) - 1
-            kind2, payload = options[opt_idx]
-        except (ValueError, IndexError):
-            print("Invalid choice.")
-            return
-
-        if kind2 == "choice_list":
-            normalized = [opt if isinstance(opt, list) else [opt] for opt in payload]
-            print("Options:")
-            for i, opt in enumerate(normalized, start=1):
-                pretty = ", ".join(fmt_effect(e) for e in opt)
-                print(f"  {i}: {pretty}")
-            while True:
-                raw = (
-                    ui_input("Pick option (1-based, or 'x' to cancel): ")
-                    .strip()
-                    .lower()
-                )
-                if raw in ("x", ""):
-                    return
-                try:
-                    oi = int(raw) - 1
-                    if 0 <= oi < len(normalized):
-                        pretty = ", ".join(fmt_effect(e) for e in normalized[oi])
-                        apply_effects(normalized[oi], p, o, g)
-                        card["_used"] = True
-                        g.log.append(f"{p.name} uses {card['name']} ({pretty})")
-                        print(f"Used {card['name']} (choice).")
-                        return
-                except ValueError:
-                    pass
-                print("Invalid option.")
-
-        elif kind2 == "choose_block":
-            opts = payload.get("options", [])
-            norm = [opt if isinstance(opt, list) else [opt] for opt in opts]
-            print("Options:")
-            for i, opt in enumerate(norm, start=1):
-                pretty = ", ".join(fmt_effect(e) for e in opt)
-                print(f"  {i}: {pretty}")
-            while True:
-                raw = (
-                    ui_input("Pick option (1-based, or 'x' to cancel): ")
-                    .strip()
-                    .lower()
-                )
-                if raw in ("x", ""):
-                    return
-                try:
-                    oi = int(raw) - 1
-                    if 0 <= oi < len(norm):
-                        pretty = ", ".join(fmt_effect(e) for e in norm[oi])
-                        apply_effects(norm[oi], p, o, g)
-                        card["_used"] = True
-                        g.log.append(f"{p.name} uses {card['name']} ({pretty})")
-                        print(f"Used {card['name']} (choose).")
-                        return
-                except ValueError:
-                    pass
-                print("Invalid option.")
-
-        elif kind2 == "effects":
-            apply_effects(payload, p, o, g)
-            card["_used"] = True
-            g.log.append(f"{p.name} uses {card['name']}")
-            print(f"Used {card['name']}.")
-
-        elif kind2 == "scrap":
-            yn = (
-                ui_input(f"Scrap {card['name']} for its effect? (y/N): ")
-                .strip()
-                .lower()
-            )
-            if yn == "y":
-                apply_effects(payload, p, o, g)
-                if hasattr(g, "scrap_heap"):
-                    g.scrap_heap.append(card)
-                try:
-                    p.bases.remove(card)
-                except ValueError:
-                    pass
-                g.log.append(f"{p.name} scraps {card['name']}")
-                print(f"Scrapped {card['name']}.")
-            else:
-                print("Cancelled.")
+    if ui_common.ui_input(f"Scrap {card.get('name','?')}? (y/n): ").strip().lower() != "y":
+        ui_common.ui_print("Canceled.")
         return
 
-    # ---------- SHIP handling ----------
-    if kind == "ship":
-        from starrealms.effects import apply_effects
-
-        if not card.get("scrap"):
-            print("This ship has no scrap ability.")
-            return
-        yn = (
-            ui_input(f"Scrap {card['name']} from play for its effect? (y/N): ")
-            .strip()
-            .lower()
-        )
-        if yn != "y":
-            print("Cancelled.")
-            return
-        apply_effects(card["scrap"], p, o, g)
-        if hasattr(g, "scrap_heap"):
-            g.scrap_heap.append(card)
-        try:
-            p.in_play.remove(card)
-        except ValueError:
-            pass
-        g.log.append(f"{p.name} scraps {card['name']} from play")
-        print(f"Scrapped {card['name']}.")
+    ok = (p.activate_ship(card, o, g, scrap=True) if card.get("type") == "ship"
+          else p.activate_base(card, o, g, scrap=True))
+    if not ok:
+        ui_common.ui_print("Could not scrap that card.")
