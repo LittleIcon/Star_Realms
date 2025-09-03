@@ -1,44 +1,31 @@
 {
-  "schema_version": 2,
-  "id": 13,
-  "name": "Royal Redoubt",
-  "faction": "Star Empire",
-  "type": "base",
-  "cost": 6,
-  "defense": 6,
-  "outpost": true,
-  "set": "base",
-  "rules_version": "base-1.0",
   "abilities": [
     {
-      "id": "Royal Redoubt_activated_0",
-      "trigger": "activated",
-      "frequency": {
-        "once_per_turn": true
-      },
-      "effects": [
-        {
-          "type": "combat",
-          "amount": 3
-        }
-      ]
-    },
-    {
-      "id": "Royal Redoubt_ally_1",
-      "trigger": "on_play",
       "condition": {
         "faction_in_play": {
           "faction": "Star Empire",
           "min": 1,
-          "scope": "this_turn"
+          "scope": "in_play"
         }
       },
       "effects": [
-        {
-          "type": "opponent_discards",
-          "amount": 1
-        }
-      ]
+        { "amount": 1, "type": "opponent_discards" }
+      ],
+      "id": "Royal Redoubt_ally_1",
+      "trigger": "ally"
     }
-  ]
+  ],
+  "cost": 6,
+  "defense": 6,
+  "effects": [
+    { "trigger": "play", "type": "combat", "amount": 3 }
+  ],
+  "faction": "Star Empire",
+  "id": 13,
+  "name": "Royal Redoubt",
+  "outpost": true,
+  "rules_version": "base-1.0",
+  "schema_version": 2,
+  "set": "base",
+  "type": "base"
 }

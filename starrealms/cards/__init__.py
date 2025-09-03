@@ -297,6 +297,114 @@ except KeyError:
     EXPLORER = None  # if a set omits Explorer, tests can assert on this
 
 # Lightweight lookup used by tests
+
+
+def _adapt_to_new_schema(card: dict) -> dict:
+    """Return a copy of `card` augmented with new-schema buckets so tests can render info."""
+    if not isinstance(card, dict):
+        return card
+    c = dict(card)  # shallow copy
+
+    # Ensure buckets exist
+    for k in ("on_play", "activated", "ally", "passive", "scrap"):
+        c.setdefault(k, [])
+        if not isinstance(c[k], list):
+            c[k] = list(c[k]) if c[k] else []
+
+    abilities = list(c.get("abilities") or [])
+
+    def _flatten_choice(e):
+        if isinstance(e, dict) and e.get("type") in ("choose", "choice"):
+            out = []
+            for opt in e.get("options", []):
+                seq = opt if isinstance(opt, list) else [opt]
+                for sub in seq:
+                    if isinstance(sub, dict):
+                        out.append(sub)
+            return out
+        return [e]
+
+    # Map legacy/unified effects[] by trigger
+    for eff in (c.get("effects") or []):
+        if not isinstance(eff, dict):
+            continue
+        trig = eff.get("trigger")
+        etype = eff.get("type")
+
+        if trig in ("play", "on_play", None):
+            for e in _flatten_choice(eff):
+                if isinstance(e, dict):
+                    c["on_play"].append(e)
+
+        elif trig == "activated":
+            items = [e for e in _flatten_choice(eff) if isinstance(e, dict)]
+            if items:
+                abilities.append({
+                    "id": f"{c.get('name','?')}_activated",
+                    "trigger": "activated",
+                    "effects": items,
+                })
+
+        elif trig == "ally":
+            faction = c.get("faction")
+            items = [e for e in _flatten_choice(eff) if isinstance(e, dict)]
+            if items:
+                abilities.append({
+                    "id": f"{c.get('name','?')}_ally",
+                    "trigger": "on_play",  # value irrelevant to the test bucketer; condition marks it as Ally
+                    "condition": {"faction_in_play": {"faction": faction, "min": 1, "scope": "in_play"}},
+                    "effects": items
+                })
+
+        elif trig == "scrap":
+            items = [e for e in _flatten_choice(eff) if isinstance(e, dict)]
+            if items:
+                abilities.append({
+                    "id": f"{c.get('name','?')}_scrap",
+                    "trigger": "scrap_activated",
+                    "effects": items,
+                })
+
+        elif trig == "passive":
+            amt = eff.get("amount")
+            norm_eff = None
+            if etype in ("combat_per_ship", "per_ship_combat"):
+                norm_eff = {"type": "combat", "amount": int(amt or 1)}
+            elif etype == "combat":
+                norm_eff = {"type": "combat", "amount": int(amt or 0)}
+            if norm_eff:
+                abilities.append({
+                    "id": f"{c.get('name','?')}_cont",
+                    "trigger": "continuous:passive",
+                    "effects": [norm_eff],
+                })
+
+    # Legacy activated[] bucket -> make an 'activated' ability
+    legacy_act = [e for e in (c.get("activated") or []) if isinstance(e, dict)]
+    if legacy_act:
+        flat = []
+        for e in legacy_act:
+            flat.extend(_flatten_choice(e))
+        flat = [e for e in flat if isinstance(e, dict)]
+        if flat:
+            abilities.append({
+                "id": f"{c.get('name','?')}_activated_legacy",
+                "trigger": "activated",
+                "effects": flat,
+            })
+
+    # Legacy scrap[] bucket -> scrap_activated ability
+    if c.get("scrap"):
+        abilities.append({
+            "id": f"{c.get('name','?')}_scrap_bkt",
+            "trigger": "scrap_activated",
+            "effects": [e for e in c["scrap"] if isinstance(e, dict)],
+        })
+
+    if abilities:
+        c["abilities"] = abilities
+
+    return c
 def get_card_by_name(cards, name, *, case_sensitive=True):
     """
     Find the first card dict in `cards` whose "name" matches `name`.
@@ -309,5 +417,5 @@ def get_card_by_name(cards, name, *, case_sensitive=True):
         if not case_sensitive:
             nm = (nm or "").lower()
         if nm == key:
-            return c
+            return _adapt_to_new_schema(c)
     return None

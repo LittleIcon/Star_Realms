@@ -209,7 +209,11 @@ class AbilityDispatcher:
         is now satisfied, but only once per (card, ability) per turn.
         Supports either:
           - {"trigger":"ally","faction":"Trade Federation", "effects":[...]}
-          - or {"trigger":"ally","condition":{"faction_in_play":{"faction":"TF","min":1,"scope":"in_play"}}}        """
+          - or {"trigger":"ally","condition":{"faction_in_play":{"faction":"TF","min":1,"scope":"in_play"}}}
+        Also supports the common JSON encoding where 'ally' is modeled as an
+        'on_play' with a 'faction_in_play' condition by simply letting those pass
+        on the second card’s on_play; this sweep ensures true 'ally' triggers also fire.
+        """
         applied = self._applied_allies.setdefault(player, set())
         in_play = self.api.list_zone(player, "in_play")
 
@@ -220,7 +224,6 @@ class AbilityDispatcher:
                     continue
                 if ab.get("trigger") != "ally":
                     continue
-                # HARD GUARD: do not re-apply on_play/activated/scrap_activated here
 
                 key = (id(card), idx)
                 if key in applied:

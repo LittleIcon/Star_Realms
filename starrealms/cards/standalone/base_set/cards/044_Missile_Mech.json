@@ -1,38 +1,39 @@
 {
-  "schema_version": 2,
-  "id": 44,
-  "name": "Missile Mech",
-  "faction": "Machine Cult",
-  "type": "ship",
-  "cost": 6,
-  "defense": null,
-  "outpost": false,
-  "set": "base",
-  "rules_version": "base-1.0",
   "abilities": [
     {
-      "id": "Missile Mech_on_play_0",
-      "trigger": "on_play",
       "effects": [
         {
-          "type": "combat",
-          "amount": 6
+          "amount": 6,
+          "type": "combat"
         },
         {
           "type": "destroy_base"
         }
-      ]
+      ],
+      "id": "Missile Mech_on_play_0",
+      "trigger": "on_play"
     },
     {
-      "id": "Missile Mech_ally_1",
-      "trigger": "ally",
-      "faction": "Machine Cult",
       "effects": [
         {
-          "type": "draw",
-          "amount": 1
+          "amount": 1,
+          "type": "draw"
         }
-      ]
+      ],
+      "faction": "Machine Cult",
+      "id": "Missile Mech_ally_1",
+      "trigger": "ally"
     }
-  ]
+  ],
+  "cost": 6,
+  "defense": null,
+  "effects": [],
+  "faction": "Machine Cult",
+  "id": 44,
+  "name": "Missile Mech",
+  "outpost": false,
+  "rules_version": "base-1.0",
+  "schema_version": 2,
+  "set": "base",
+  "type": "ship"
 }

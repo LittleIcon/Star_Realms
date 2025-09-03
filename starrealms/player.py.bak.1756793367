@@ -76,36 +76,6 @@ def trigger_effects(card: Dict[str, Any], phase: str, player, opponent, game) ->
     """Collect effects for `phase` from `card` and apply them."""
     effs = collect_effects(card, phase)
     if effs:
-                # --- DEDUPE: prevent duplicate combat specs from being applied twice ---
-        _seen_combat = set()
-        _effs_dedup = []
-        for _e in effs:
-            if isinstance(_e, dict) and _e.get('type') == 'combat':
-                try:
-                    _amt = int(_e.get('amount', 0) or 0)
-                except Exception:
-                    _amt = 0
-                _key = ('combat', _amt)
-                if _key in _seen_combat:
-                    continue
-                _seen_combat.add(_key)
-            _effs_dedup.append(_e)
-        effs = _effs_dedup
-                # --- DEDUPE: prevent duplicate combat specs from being applied twice ---
-        _seen_combat = set()
-        _effs_dedup = []
-        for _e in effs:
-            if isinstance(_e, dict) and _e.get('type') == 'combat':
-                try:
-                    _amt = int(_e.get('amount', 0) or 0)
-                except Exception:
-                    _amt = 0
-                _key = ('combat', _amt)
-                if _key in _seen_combat:
-                    continue
-                _seen_combat.add(_key)
-            _effs_dedup.append(_e)
-        effs = _effs_dedup
         apply_effects(effs, player, opponent, game)
 
 
@@ -318,15 +288,6 @@ class Player:
             self.discard_pile.clear()
 
     def play_card(self, card, opponent, game):
-        # Guard to avoid double on_play firing per physical card per turn
-        turn_no = getattr(game, 'turn_number', 0)
-        _on_play_ok = True
-        if isinstance(card, dict):
-            key = '__on_play_done_turn__'
-            if card.get(key) == turn_no:
-                _on_play_ok = False
-            else:
-                card[key] = turn_no
         """
         Play a card from hand to in_play or bases, applying on-play effects.
         - Dispatcher is notified (continuous auras, on_play abilities, hooks, etc.)

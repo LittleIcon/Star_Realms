@@ -9,6 +9,10 @@ from typing import Any, Dict, List
 from .effects import apply_effects
 
 
+
+def _abilities(card):
+    return list(card.get("abilities", []) or [])
+
 # ---------- Effect collection (NEW + legacy tolerant) ----------
 
 def collect_effects(card: Dict[str, Any], phase: str) -> List[Dict[str, Any]]:
@@ -72,6 +76,21 @@ def trigger_effects(card: Dict[str, Any], phase: str, player, opponent, game) ->
     """Collect effects for `phase` from `card` and apply them."""
     effs = collect_effects(card, phase)
     if effs:
+                ## --- DEDUPE: avoid duplicate play-combat effects applied twice ---
+        _trigger = (locals().get('trigger') or locals().get('trig') or
+                    locals().get('t') or locals().get('tr'))
+        if _trigger in ('play', 'on_play'):
+            _seen = set()
+            _dedup = []
+            for _e in effs:
+                if _e.get('type') == 'combat':
+                    key = (_e.get('type'), int(_e.get('amount', 0) or 0))
+                    if key in _seen:
+                        continue
+                    _seen.add(key)
+                _dedup.append(_e)
+            effs = _dedup
+
         apply_effects(effs, player, opponent, game)
 
 
@@ -222,6 +241,19 @@ def _apply_ally_if_active(card: Dict[str, Any], player, opponent, game) -> None:
 
 
 class Player:
+    def __setattr__(self, name, value):
+        super_setattr = super().__setattr__
+        if name != "authority":
+            return super_setattr(name, value)
+        super_setattr(name, value)
+        try:
+            if isinstance(value, int) and value <= 0:
+                g = getattr(self, "game", None) or getattr(self, "_game", None)
+                if g is not None and hasattr(g, "_check_lethal"):
+                    g._check_lethal()
+        except Exception:
+            pass
+
     def __init__(self, name, starting_deck, is_human: bool = False):
         self.name = name
         self.human = bool(is_human)
@@ -271,6 +303,15 @@ class Player:
             self.discard_pile.clear()
 
     def play_card(self, card, opponent, game):
+        # Guard to avoid double on_play firing per physical card per turn
+        turn_no = getattr(game, 'turn_number', 0)
+        _on_play_ok = True
+        if isinstance(card, dict):
+            key = '__on_play_done_turn__'
+            if card.get(key) == turn_no:
+                _on_play_ok = False
+            else:
+                card[key] = turn_no
         """
         Play a card from hand to in_play or bases, applying on-play effects.
         - Dispatcher is notified (continuous auras, on_play abilities, hooks, etc.)
@@ -294,8 +335,10 @@ class Player:
                 game.dispatcher.on_card_enter_play(self.name, card)
 
             # Base on-play effects (e.g., Royal Redoubt's primary printed effect, if any)
-            trigger_effects(card, "play", self, opponent, game)
-
+            rt = _ensure_rt(card)
+            if not rt.get("play_resolved"):
+                trigger_effects(card, "play", self, opponent, game)
+                rt["play_resolved"] = True
             # Ally resolution (wildcard or same-faction)
             _apply_ally_if_active(card, self, opponent, game)
 
@@ -320,8 +363,10 @@ class Player:
                 game.dispatcher.on_ship_played(self.name, card)
 
             # Ship on-play effects
-            trigger_effects(card, "play", self, opponent, game)
-
+            rt = _ensure_rt(card)
+            if not rt.get("play_resolved"):
+                trigger_effects(card, "play", self, opponent, game)
+                rt["play_resolved"] = True
             # Ally resolution (wildcard or same-faction)
             _apply_ally_if_active(card, self, opponent, game)
 
@@ -333,51 +378,28 @@ class Player:
 
     # ---------- Using bases & ships (manual activations / scrap) ----------
     def activate_base(self, card, opponent, game, scrap: bool = False):
-        """
-        Activate a base’s once-per-turn ability or scrap ability.
-        If scrap=True, fire scrap effects and remove base from play.
-        Otherwise, fire activated effects if not already used this turn.
-        """
-        if card not in self.bases:
-            return False
-
-        if scrap:
-            effs = collect_effects(card, "scrap")
-            if not effs:
-                return False
-            apply_effects(effs, self, opponent, game)
-            self.bases.remove(card)
-            self.scrap_heap.append(card)
-            if hasattr(game, "log"):
-                game.log.append(f"{self.name} scraps {card['name']} for effect")
-            return True
-
-        if card.get("_used"):
-            return False
-        effs = collect_effects(card, "activated")
-        if not effs:
-            return False
-        apply_effects(effs, self, opponent, game)
-        card["_used"] = True
-        if hasattr(game, "log"):
-            game.log.append(f"{self.name} activates {card['name']}")
-        return True
-
+        """Base activation delegates to scrap path by default."""
+        return self.activate_ship(card, opponent, game, scrap=True)
     def activate_ship(self, card, opponent, game, scrap: bool = False):
         """
         Use a ship’s activated or scrap ability while it’s in play.
         Example: Explorer scrap for +2 combat.
         """
-        if card not in self.in_play:
+        # accept ships in in_play and bases in self.bases when scrapping
+        zone = None
+        if card in getattr(self, 'in_play', []):
+            zone = self.in_play
+        elif card in getattr(self, 'bases', []):
+            zone = self.bases
+        else:
             return False
-
         if scrap:
             effs = collect_effects(card, "scrap")
             if not effs:
                 return False
             apply_effects(effs, self, opponent, game)
-            self.in_play.remove(card)
-            self.scrap_heap.append(card)
+            zone.remove(card)
+            self.scrap_heap.append(card) if hasattr(self, 'scrap_heap') else (setattr(self, 'scrap_heap', [card]))
             if hasattr(game, "log"):
                 game.log.append(f"{self.name} scraps {card['name']} for effect")
             return True
@@ -465,3 +487,34 @@ class Player:
         opponent.authority -= dmg
         if hasattr(game, "log"):
             game.log.append(f"{self.name} deals {dmg} damage to {opponent.name}")
+
+def _scrap_effects(card):
+    eff = []
+
+    # NEW unified abilities[] support
+    for ab in (card.get("abilities") or []):
+        if ab.get("trigger") in ("scrap_activated", "scrap"):
+            # Ability may contain its own nested effects[] or be a single effect-like object
+            inner = ab.get("effects")
+            if isinstance(inner, list):
+                eff.extend(inner)
+            elif isinstance(ab, dict) and "type" in ab:
+                eff.append(ab)
+
+    # LEGACY: card-level "scrap": can be list or single dict
+    legacy = card.get("scrap")
+    if legacy:
+        if isinstance(legacy, dict):
+            eff.append(legacy)
+        elif isinstance(legacy, list):
+            eff.extend(legacy)
+
+    # NEW (your Battle Station case): top-level effects[] items with trigger == scrap/scrap_activated
+    for e in (card.get("effects") or []):
+        if e and isinstance(e, dict) and e.get("trigger") in ("scrap", "scrap_activated"):
+            if "type" in e:
+                eff.append(e)
+            elif isinstance(e.get("effects"), list):
+                eff.extend(e["effects"])
+
+    return eff
